@@ -1,241 +1,186 @@
 # Athesis
 
-A modern, secure, and responsive forum system built with PHP and MySQL. This application provides a complete discussion platform with user authentication, topic management, threaded replies, and comprehensive security features.
+**Athesis** is a community **forum + professional blog** with an Odyssey-inspired UI: pure black, JetBrains Mono, and chatak red (`#ff0033`). Sparse chrome. End-to-end features for discussion and publishing.
 
-## 🛠️ Technologies Used
+> Repo / product name: **Athesis** (not “PHP Forum”).
 
-- **Backend**: PHP 7.4+ (8.0+ recommended)
-- **Database**: MySQL 5.7+ (8.0+ recommended)
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **Framework**: Bootstrap 5.3.0
-- **Icons**: Bootstrap Icons 1.10.0
-- **Fonts**: Google Fonts (Inter)
-- **Web Server**: Apache/Nginx
-- **Security**: Bcrypt, CSRF Protection, XSS Prevention
+## Stack
 
-## 📋 Project Overview
+| Layer | Tech |
+|--------|------|
+| Backend | PHP 8.2+ (PDO, sessions) |
+| Database | MySQL 8 |
+| Frontend | Bootstrap 5 grid (restyled), custom `style.css` |
+| Type | JetBrains Mono |
+| Runtime | Apache (Docker) or any PHP + MySQL host |
+| Design | OLED black · `#f2eeea` text · red accent · 720px content wrap |
 
-Athesis is a community forum and professional blog with an Odyssey-inspired pure-black UI. It supports registration, topics and replies, public signatures, a full blog stack (drafts, SEO, media, schedule, series, paywall), and role-based access control.
+## What you get
 
-## ✨ Key Features
+### Forum
+- Register / login / logout / profile
+- Topics list with search & sort
+- View topic, create topic, edit topic / reply
+- Threaded replies
+- Public **hacker-style signatures** under posts
+- Role helpers: user, author, moderator, admin
 
-### Core Functionality
-- **User Authentication**: Secure registration and login system with password hashing
-- **Topic Management**: Create, view, and manage discussion topics
-- **Threaded Replies**: Reply to topics and other replies for organized discussions
-- **Forum Browsing**: Browse topics with pagination, search, and filtering options
-- **Responsive Design**: Mobile-friendly interface using Bootstrap 5
+### Blog (Phases 1–4)
+- **Write / edit** posts (draft · published · scheduled)
+- Categories, tags, series (multi-part)
+- SEO meta, Open Graph, canonical, reading time, views
+- Comments (logged-in auto-approve; guest → moderation)
+- Related posts, search, RSS, XML sitemap
+- **Admin** dashboard + bulk publish / unpublish / delete
+- **Media library** (image upload)
+- Live preview + **revisions** (restore)
+- Schedule publish (lazy cron on page load)
+- Newsletter capture + subscriber list
+- Share buttons, archive by month, TOC + light code highlight
+- Members-only (**paywall**) posts
+- Comment **moderate** queue
 
-### Security Features
-- **Password Security**: Bcrypt password hashing with strength validation
-- **CSRF Protection**: Cross-Site Request Forgery protection on all forms
-- **XSS Prevention**: Input sanitization and output encoding
-- **SQL Injection Prevention**: Prepared statements and parameter binding
-- **Session Security**: Secure session management with regeneration
-- **Rate Limiting**: Protection against brute force attacks
-- **Security Headers**: Comprehensive HTTP security headers
+### Site chrome
+- Static pages: about, privacy, contact
+- Custom **404**
+- Brand art under `public/images/brand/`
+- Optional analytics: `PLAUSIBLE_DOMAIN` / `GA_MEASUREMENT_ID`
 
-### User Experience
-- **Clean Interface**: Modern, minimal design with smooth animations
-- **Search Functionality**: Full-text search across topics and content
-- **Pagination**: Efficient browsing of large topic lists
-- **User Profiles**: Editable user profiles with statistics
-- **Real-time Validation**: Client-side form validation with feedback
-- **Responsive Layout**: Optimized for desktop, tablet, and mobile devices
+## Quick start (Docker)
 
-## 👥 User Roles
-
-### Regular User
-- Create and reply to topics
-- Edit own posts
-- Update profile information
-- Search and browse topics
-- View forum statistics
-
-### Moderator
-- All user permissions
-- Edit any post
-- Lock/unlock topics
-- Pin/unpin topics
-- Moderate discussions
-
-### Administrator
-- All moderator permissions
-- User management
-- System configuration
-- Access to admin panel
-- Full system control
-
-## 📁 Project Structure
-
-```
-php-forum/
-├── config/
-│   ├── config.php          # Main configuration
-│   ├── database.php        # Database connection
-│   └── security.php        # Security functions
-├── includes/
-│   ├── functions.php       # Common functions
-│   ├── header.php          # HTML header template
-│   └── footer.php          # HTML footer template
-├── public/
-│   ├── auth/
-│   │   ├── login.php       # Login page
-│   │   ├── register.php    # Registration page
-│   │   ├── logout.php      # Logout handler
-│   │   └── profile.php     # User profile
-│   ├── forum/
-│   │   ├── topics.php      # Topic listing
-│   │   ├── view_topic.php  # Topic view
-│   │   └── create_topic.php # Topic creation
-│   ├── css/
-│   │   └── style.css       # Custom styles
-│   ├── js/
-│   │   └── script.js       # JavaScript functionality
-│   └── index.php           # Homepage
-├── sql/
-│   └── forum_setup.sql     # Database schema
-└── README.md               # This file
+```bash
+git clone https://github.com/anubhavg-icpl/athesis.git
+cd athesis
+docker compose up -d --build
 ```
 
-## 🚀 Setup Instructions
+App: **http://localhost:8088/public/index.php**  
+(Port **8088** by default; change in `docker-compose.yml` if needed.)
 
-### Prerequisites
-- PHP 7.4 or higher (8.0+ recommended)
-- MySQL 5.7 or higher (8.0+ recommended)
-- Apache or Nginx web server
-- PHP extensions: PDO, PDO_MySQL, mbstring, openssl
+On first DB boot, `docker/forum_setup_docker.sql` (or `sql/forum_setup.sql`) seeds schema. Apply blog migrations if you have an older volume:
 
-### Installation Steps
+```bash
+docker exec -i athesis-db-1 mysql -uforum -pforumpass php_forum < sql/migration_add_signature.sql
+docker exec -i athesis-db-1 mysql -uforum -pforumpass php_forum < sql/migration_blog_phase1.sql
+docker exec -i athesis-db-1 mysql -uforum -pforumpass php_forum < sql/migration_blog_phase2.sql
+docker exec -i athesis-db-1 mysql -uforum -pforumpass php_forum < sql/migration_blog_phase3_4.sql
+```
 
-1. **Download and Setup**
+(Some `ALTER`s are one-shot; ignore “duplicate column” if already applied.)
+
+### Default admin
+
+| | |
+|--|--|
+| Username | `admin` |
+| Password | `admin123` |
+
+**Change this immediately.**
+
+## Local (without Docker)
+
+1. PHP 8.2+, MySQL 8, Apache/Nginx with `mod_rewrite` optional (pretty blog URLs).
+2. Create DB and import:
+
    ```bash
-   # Clone or download the project
-   git clone https://github.com/noah-s-dev/php-forum.git
-   cd php-forum
-
-   # Set proper permissions
-   chmod 755 public/
-   chmod 644 public/*.php
-   chmod 644 config/*.php
-   chmod 644 includes/*.php
+   mysql -u root -p < sql/forum_setup.sql
+   # then run migration_*.sql in order if not already in forum_setup
    ```
 
-2. **Database Setup**
-   ```sql
-   -- Create database
-   CREATE DATABASE php_forum CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+3. Set env or edit `config/database.php`:
 
-   -- Import the schema
-   mysql -u username -p php_forum < sql/forum_setup.sql
+   ```bash
+   export DB_HOST=localhost
+   export DB_NAME=php_forum
+   export DB_USER=forum
+   export DB_PASS=forumpass
    ```
 
-3. **Configuration**
-   
-   a. **Database Configuration**
-      Edit `config/database.php` with your database credentials:
-      ```php
-      define('DB_HOST', 'localhost');
-      define('DB_NAME', 'php_forum');
-      define('DB_USER', 'your_username');
-      define('DB_PASS', 'your_password');
-      ```
-   
-   b. **URL Configuration**
-      The system automatically detects the base URL and project path. If your project is located at `http://localhost/php-forum`, the system will automatically configure the URLs correctly. No manual configuration is needed for the base URL.
-      
-      The `SITE_URL` in `config/config.php` is automatically set based on your server configuration and project location.
+4. Point the web root at the **repo root** (so `/public/...` resolves), or serve `public/` and adjust `BASE_PATH` detection.
+5. Ensure `public/uploads/blog/` is writable for media uploads.
 
-## 📖 Usage
+## Useful URLs
 
-### Getting Started
+| Path | What |
+|------|------|
+| `/public/index.php` | Home |
+| `/public/forum/topics.php` | Forum topics |
+| `/public/blog/index.php` | Blog |
+| `/public/blog/write.php` | Write / edit post (login) |
+| `/public/blog/admin.php` | Blog admin |
+| `/public/blog/media.php` | Media library |
+| `/public/blog/moderate.php` | Comment moderation |
+| `/public/blog/rss.php` | RSS |
+| `/public/blog/sitemap.php` | Sitemap |
+| `/public/pages/about.php` | About |
+| `/blog/post/{slug}` | Pretty post URL (Apache rewrite) |
 
-1. **Access the Forum**: 
-   - If installed in root: Navigate to `http://localhost` in a web browser
-   - If installed in subdirectory (e.g., `php-forum`): Navigate to `http://localhost/php-forum` in a web browser
-   - The system automatically detects the correct base path and configures URLs accordingly
-2. **Register an Account**: Click "Register" and create your account
-3. **Login**: Use your credentials to log in
-4. **Create Topics**: Click "New Topic" to start a discussion
-5. **Reply to Topics**: Click on any topic to view and reply
+## Project layout
 
-### Default Admin Account
-Default admin credentials (change immediately):
-- **Username**: admin
-- **Password**: admin123
+```
+athesis/
+├── config/                 # config, database, security (CSP, sessions)
+├── includes/
+│   ├── blog.php            # Blog helpers
+│   ├── functions.php       # Auth, CSRF, sanitization
+│   ├── header.php / footer.php
+│   └── partials/           # e.g. newsletter
+├── public/
+│   ├── index.php           # Home
+│   ├── auth/               # login, register, profile, logout
+│   ├── forum/              # topics, view, create, edit
+│   ├── blog/               # full blog surface
+│   ├── pages/              # about, privacy, contact
+│   ├── images/brand/       # static Odyssey-matched art
+│   ├── uploads/blog/       # user media (gitignored content)
+│   ├── css/style.css       # design system
+│   ├── js/script.js
+│   └── 404.php
+├── sql/                    # schema + migrations
+├── docker/                 # Apache extras, Docker seed SQL
+├── docker-compose.yml
+├── Dockerfile
+└── README.md
+```
 
-## 🎯 Intended Use
+## Design tokens (CSS)
 
-Athesis is designed for:
+```css
+--bg: #000000;
+--text: #f2eeea;
+--accent: #ff0033;   /* chatak laal */
+--font: "JetBrains Mono", ui-monospace, monospace;
+--wrap: 720px;
+```
 
-- **Educational Purposes**: Learning PHP, MySQL, and web development
-- **Small Communities**: Local clubs, study groups, or hobby communities
-- **Prototyping**: Testing forum concepts before scaling up
-- **Personal Projects**: Individual developers building discussion platforms
-- **Demo Applications**: Showcasing forum functionality and features
+Edit `public/css/style.css` for theme changes. Brand images live in `public/images/brand/`.
 
-The system provides a solid foundation for forum development with modern security practices and responsive design. It's suitable for small to medium-sized communities and can be extended with additional features as needed.
+## Configuration
 
-## 🔧 Customization
+| Setting | Where |
+|---------|--------|
+| Site name / description | `config/config.php` → `SITE_NAME` = `Athesis` |
+| DB | Env `DB_*` or `config/database.php` |
+| Pagination | `TOPICS_PER_PAGE`, `POSTS_PER_PAGE`, etc. |
+| Upload max | `MAX_UPLOAD_SIZE` |
+| Analytics | `PLAUSIBLE_DOMAIN`, `GA_MEASUREMENT_ID` env vars |
+| Debug display | `APP_DEBUG=1` |
 
-### Styling
-- Edit `public/css/style.css` for custom styles
-- Modify Bootstrap variables for theme changes
-- Update color scheme in CSS variables
+## Security notes
 
-### Functionality
-- Add new features in respective directories
-- Follow existing code patterns and security practices
-- Update database schema as needed
+- Passwords: bcrypt  
+- CSRF on forms  
+- XSS: sanitize + limited HTML on posts  
+- SQL: prepared statements  
+- CSP + security headers in `config/security.php`  
+- Uploads restricted to images; PHP execution blocked under `uploads/blog/`  
 
-### Configuration
-- Modify `config/config.php` for site settings
-- Adjust pagination and limits as needed
-- Configure security settings in `config/security.php`
+For production: HTTPS, strong secrets, disable display_errors, dedicated DB user, backups, change default admin.
 
-## 🛡️ Security Considerations
+## License / intent
 
-### Production Deployment
-
-1. **Environment Configuration**
-   - Disable error reporting in production
-   - Use HTTPS for all connections
-   - Set secure session cookies
-   - Configure proper file permissions
-
-2. **Database Security**
-   - Use dedicated database user with minimal privileges
-   - Enable MySQL SSL connections
-   - Regular database backups
-   - Monitor for suspicious queries
-
-3. **Server Security**
-   - Keep PHP and MySQL updated
-   - Configure firewall rules
-   - Regular security updates
-   - Monitor access logs
-
-### Security Features Implemented
-
-- **Input Validation**: All user inputs are validated and sanitized
-- **Output Encoding**: All outputs are properly encoded to prevent XSS
-- **CSRF Protection**: All forms include CSRF tokens
-- **SQL Injection Prevention**: All database queries use prepared statements
-- **Password Security**: Passwords are hashed using bcrypt
-- **Session Security**: Secure session configuration with regeneration
-- **Rate Limiting**: Protection against brute force attacks
-- **Security Headers**: Comprehensive HTTP security headers
-
-
-## 📄 License
-
-**License for RiverTheme**
-RiverTheme makes this project available for demo, instructional, and personal use. You can ask for or buy a license from [RiverTheme.com](https://RiverTheme.com) if you want a pro website, sophisticated features, or expert setup and assistance. A Pro license is needed for production deployments, customizations, and commercial use.
-
-**Disclaimer**
-The free version is offered "as is" with no warranty and might not function on all devices or browsers. It might also have some coding or security flaws. For additional information or to get a Pro license, please get in touch with [RiverTheme.com](https://RiverTheme.com).
+Built for demos, learning, and small communities. Review security and scale needs before production use.
 
 ---
 
-**Note**: This is a basic forum system intended for educational and small-scale use. For large-scale production deployments, consider additional optimizations and security measures.
-
+**Athesis** · sparse discussions · long-form when it matters · can’t stop · won’t stop
