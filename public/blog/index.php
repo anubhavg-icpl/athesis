@@ -74,6 +74,8 @@ include '../../includes/header.php';
         <?php if (is_logged_in()): ?>
             <a class="btn btn-primary" href="<?php echo url('public/blog/write.php'); ?>">write →</a>
         <?php endif; ?>
+        <a class="ody-link-btn" href="<?php echo url('public/blog/archive.php'); ?>">archive</a>
+        <a class="ody-link-btn" href="<?php echo url('public/blog/series.php'); ?>">series</a>
         <a class="ody-link-btn" href="<?php echo url('public/blog/rss.php'); ?>">rss</a>
         <a class="ody-link-btn" href="<?php echo url('public/blog/sitemap.php'); ?>">sitemap</a>
     </div>
@@ -182,4 +184,5 @@ include '../../includes/header.php';
     <?php endif; ?>
 <?php endif; ?>
 
+<?php include '../../includes/partials/newsletter.php'; ?>
 <?php include '../../includes/footer.php'; ?>

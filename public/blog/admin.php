@@ -136,6 +136,10 @@ include '../../includes/header.php';
     <div class="d-flex gap-3">
         <a class="btn btn-primary btn-sm" href="<?php echo url('public/blog/write.php'); ?>">write →</a>
         <a class="ody-link-btn" href="<?php echo url('public/blog/media.php'); ?>">media</a>
+        <?php if (is_admin_or_moderator()): ?>
+        <a class="ody-link-btn" href="<?php echo url('public/blog/moderate.php'); ?>">moderate</a>
+        <a class="ody-link-btn" href="<?php echo url('public/blog/subscribers.php'); ?>">subscribers</a>
+        <?php endif; ?>
         <a class="ody-link-btn" href="<?php echo url('public/blog/index.php'); ?>">← public blog</a>
     </div>
 </div>

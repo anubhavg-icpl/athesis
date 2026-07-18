@@ -62,7 +62,7 @@ function get_current_user_data() {
     }
     
     $db = getDB();
-    $stmt = $db->prepare("SELECT id, username, email, display_name, signature, user_role, join_date FROM users WHERE id = ? AND is_active = 1");
+    $stmt = $db->prepare("SELECT id, username, email, display_name, signature, user_role, is_member, join_date FROM users WHERE id = ? AND is_active = 1");
     $stmt->execute([$_SESSION['user_id']]);
     return $stmt->fetch();
 }
@@ -245,8 +245,37 @@ function get_pagination($total_items, $items_per_page, $current_page = 1) {
  */
 function clean_content($content) {
     // Remove dangerous HTML tags but allow basic formatting
-    $allowed_tags = '<p><br><strong><em><u><ol><ul><li><blockquote>';
+    $allowed_tags = '<p><br><strong><em><u><ol><ul><li><blockquote><pre><code><h2><h3><h4><a><hr>';
     return strip_tags(trim($content), $allowed_tags);
+}
+
+/**
+ * Can write blog posts (author, moderator, admin)
+ */
+function can_write_blog() {
+    if (!is_logged_in()) {
+        return false;
+    }
+    $user = get_current_user_data();
+    if (!$user) {
+        return false;
+    }
+    return in_array($user['user_role'], ['author', 'moderator', 'admin'], true)
+        || has_role('user'); // regular members can still write; authors are explicit
+}
+
+/**
+ * Premium / member access
+ */
+function user_is_member() {
+    if (!is_logged_in()) {
+        return false;
+    }
+    if (is_admin_or_moderator()) {
+        return true;
+    }
+    $user = get_current_user_data();
+    return $user && !empty($user['is_member']);
 }
 
 /**

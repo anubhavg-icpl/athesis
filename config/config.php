@@ -61,6 +61,11 @@ define('POSTS_PER_PAGE', 10);
 define('MAX_UPLOAD_SIZE', 2097152); // 2MB
 define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif']);
 
+// Analytics (Phase 4) — set env or leave empty to disable
+// PLAUSIBLE_DOMAIN=example.com  or  GA_MEASUREMENT_ID=G-XXXX
+define('PLAUSIBLE_DOMAIN', getenv('PLAUSIBLE_DOMAIN') ?: '');
+define('GA_MEASUREMENT_ID', getenv('GA_MEASUREMENT_ID') ?: '');
+
 // Include database configuration
 require_once __DIR__ . '/database.php';
 

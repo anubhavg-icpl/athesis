@@ -105,10 +105,12 @@ function blog_find_or_create_tag($db, $name) {
 function blog_get_post_by_slug($db, $slug, $published_only = true) {
     $sql = '
         SELECT p.*, u.display_name AS author_name, u.username AS author_username, u.signature AS author_signature,
-               c.name AS category_name, c.slug AS category_slug
+               c.name AS category_name, c.slug AS category_slug,
+               s.title AS series_title, s.slug AS series_slug
         FROM blog_posts p
         JOIN users u ON u.id = p.user_id
         LEFT JOIN blog_categories c ON c.id = p.category_id
+        LEFT JOIN blog_series s ON s.id = p.series_id
         WHERE p.slug = ?
     ';
     if ($published_only) {
@@ -304,6 +306,98 @@ function blog_handle_image_upload($file, $user_id = null) {
     }
 
     return ['ok' => true, 'url' => $public_url, 'path' => $url_path];
+}
+
+/**
+ * Build table of contents from h2/h3 in HTML content.
+ * Returns [html_toc, content_with_ids]
+ */
+function blog_build_toc($content) {
+    $content = (string) $content;
+    $toc = [];
+    $i = 0;
+    $with_ids = preg_replace_callback(
+        '/<h([23])(\s[^>]*)?>(.*?)<\/h\1>/is',
+        function ($m) use (&$toc, &$i) {
+            $i++;
+            $level = (int) $m[1];
+            $text = trim(strip_tags($m[3]));
+            $id = 'sec-' . $i . '-' . blog_slugify($text);
+            $toc[] = ['level' => $level, 'text' => $text, 'id' => $id];
+            $attrs = $m[2] ?? '';
+            if (stripos($attrs, 'id=') === false) {
+                $attrs .= ' id="' . htmlspecialchars($id, ENT_QUOTES, 'UTF-8') . '"';
+            }
+            return '<h' . $level . $attrs . '>' . $m[3] . '</h' . $level . '>';
+        },
+        $content
+    );
+    if (empty($toc)) {
+        return ['', $content];
+    }
+    $html = '<nav class="ody-toc" aria-label="Table of contents"><div class="ody-toc-title">contents</div><ol>';
+    foreach ($toc as $item) {
+        $pad = $item['level'] === 3 ? ' class="ody-toc-h3"' : '';
+        $html .= '<li' . $pad . '><a href="#' . htmlspecialchars($item['id'], ENT_QUOTES, 'UTF-8') . '">'
+            . htmlspecialchars($item['text'], ENT_QUOTES, 'UTF-8') . '</a></li>';
+    }
+    $html .= '</ol></nav>';
+    return [$html, $with_ids];
+}
+
+/**
+ * Light syntax highlight for <pre><code>…</code></pre> (keyword tint)
+ */
+function blog_highlight_code($html) {
+    return preg_replace_callback(
+        '/<pre([^>]*)><code([^>]*)>(.*?)<\/code><\/pre>/is',
+        function ($m) {
+            $code = $m[3];
+            // already escaped content preferred; if raw, escape
+            if (strpos($code, '&lt;') === false && strpos($code, '<') !== false) {
+                $code = htmlspecialchars($code, ENT_QUOTES, 'UTF-8');
+            }
+            $decoded = html_entity_decode($code, ENT_QUOTES, 'UTF-8');
+            $escaped = htmlspecialchars($decoded, ENT_QUOTES, 'UTF-8');
+            // keywords (simple)
+            $escaped = preg_replace(
+                '/\b(function|return|class|const|let|var|if|else|for|while|echo|public|private|protected|require|include|new|try|catch|async|await|import|export|from|def|import|True|False|None)\b/',
+                '<span class="kw">$1</span>',
+                $escaped
+            );
+            $escaped = preg_replace('/(\/\/.*?)$/m', '<span class="cm">$1</span>', $escaped);
+            $escaped = preg_replace('/(&quot;.*?(?<!\\\\)&quot;|&#039;.*?(?<!\\\\)&#039;)/', '<span class="st">$1</span>', $escaped);
+            return '<pre' . $m[1] . ' class="ody-code"><code' . $m[2] . '>' . $escaped . '</code></pre>';
+        },
+        $html
+    );
+}
+
+function blog_render_article_body($content) {
+    $body = blog_render_body($content);
+    [$toc, $body] = blog_build_toc($body);
+    $body = blog_highlight_code($body);
+    return [$toc, $body];
+}
+
+function blog_post_url($slug) {
+    // Pretty path when rewrites available; still works as query fallback helper
+    return url('public/blog/post.php?slug=' . rawurlencode($slug));
+}
+
+function blog_get_series($db) {
+    return $db->query('SELECT * FROM blog_series ORDER BY title ASC')->fetchAll();
+}
+
+function blog_series_posts($db, $series_id) {
+    $stmt = $db->prepare("
+        SELECT id, title, slug, series_order, status, published_at
+        FROM blog_posts
+        WHERE series_id = ? AND status = 'published'
+        ORDER BY series_order ASC, published_at ASC
+    ");
+    $stmt->execute([(int) $series_id]);
+    return $stmt->fetchAll();
 }
 
 function blog_resolve_status($status, $scheduled_at_raw) {

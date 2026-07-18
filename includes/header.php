@@ -46,7 +46,14 @@ $og_type = $page_og_type ?? 'website';
     <!-- Bootstrap (grid + utilities only; fully restyled) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom Odyssey-inspired theme -->
-    <link href="<?php echo url('public/css/style.css'); ?>?v=<?php echo filemtime(__DIR__ . '/../public/css/style.css'); ?>" rel="stylesheet">
+    <link href="<?php echo url('public/css/style.css'); ?>?v=<?php echo filemtime(__DIR__ . '/../public/css/style.css'); ?>?v2" rel="stylesheet">
+    <?php if (defined('PLAUSIBLE_DOMAIN') && PLAUSIBLE_DOMAIN !== ''): ?>
+    <script defer data-domain="<?php echo sanitize_input(PLAUSIBLE_DOMAIN); ?>" src="https://plausible.io/js/script.js"></script>
+    <?php endif; ?>
+    <?php if (defined('GA_MEASUREMENT_ID') && GA_MEASUREMENT_ID !== ''): ?>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo sanitize_input(GA_MEASUREMENT_ID); ?>"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config',<?php echo json_encode(GA_MEASUREMENT_ID); ?>);</script>
+    <?php endif; ?>
 </head>
 <body>
     <header class="ody-nav">
@@ -68,6 +75,9 @@ $og_type = $page_og_type ?? 'website';
                 </li>
                 <li>
                     <a href="<?php echo url('public/forum/topics.php'); ?>" class="<?php echo $is_topics ? 'active' : ''; ?>">topics</a>
+                </li>
+                <li>
+                    <a href="<?php echo url('public/pages/about.php'); ?>">about</a>
                 </li>
                 <?php if (is_logged_in()): ?>
                     <li>

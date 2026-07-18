@@ -1385,6 +1385,117 @@ small.text-muted {
     word-break: break-all;
 }
 
+/* Phase 3/4 */
+.ody-toc {
+    margin: 1rem 1.2rem 1.5rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.ody-toc-title {
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.65rem;
+}
+
+.ody-toc ol {
+    margin: 0;
+    padding-left: 1.1rem;
+}
+
+.ody-toc li {
+    margin: 0.35rem 0;
+}
+
+.ody-toc a {
+    color: var(--text-dim);
+    border-bottom: none;
+}
+
+.ody-toc a:hover {
+    color: var(--accent);
+}
+
+.ody-toc-h3 {
+    margin-left: 0.75rem;
+    list-style-type: circle;
+}
+
+.ody-code {
+    background: #030303 !important;
+    border: 1px solid var(--border);
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-size: var(--text-sm);
+    line-height: 1.55;
+    color: var(--text);
+}
+
+.ody-code .kw { color: var(--accent); }
+.ody-code .cm { color: var(--text-mute); }
+.ody-code .st { color: #6b9bd1; }
+
+.ody-share-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    align-items: center;
+}
+
+.ody-share-label {
+    font-size: var(--text-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+}
+
+.ody-paywall {
+    text-align: left;
+    padding: 1.5rem 0;
+}
+
+.ody-paywall-tag {
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+}
+
+.ody-paywall h2 {
+    font-size: var(--text-lg);
+    margin-bottom: 0.75rem;
+}
+
+.ody-archive-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ody-archive-list li {
+    margin: 0.5rem 0;
+}
+
+.ody-archive-list a {
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+}
+
+.ody-archive-list a:hover {
+    color: var(--accent);
+}
+
+.ody-list-item.is-current {
+    border-color: var(--accent);
+}
+
+.ody-newsletter .ody-panel {
+    margin-bottom: 0;
+}
+
 .topic-content a,
 .reply-content a,
 .ody-post-body a {

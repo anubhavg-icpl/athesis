@@ -18,13 +18,13 @@ function set_security_headers() {
     // Referrer Policy
     header('Referrer-Policy: strict-origin-when-cross-origin');
     
-    // Content Security Policy (allow JetBrains Mono + Bootstrap CDN)
+    // Content Security Policy (fonts + Bootstrap + optional analytics)
     $csp = "default-src 'self'; " .
-           "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " .
+           "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://plausible.io https://www.googletagmanager.com; " .
            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; " .
            "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com data:; " .
            "img-src 'self' data: https:; " .
-           "connect-src 'self';";
+           "connect-src 'self' https://plausible.io https://www.google-analytics.com https://www.googletagmanager.com";
     header("Content-Security-Policy: $csp");
     
     // HTTPS enforcement (uncomment in production)

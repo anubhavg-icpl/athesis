@@ -43,6 +43,7 @@ if ($post && $restore_id) {
 
 $page_title = $post ? 'Edit post' : 'Write post';
 $categories = blog_get_categories($db);
+$series_list = blog_get_series($db);
 $all_tags = blog_get_tags($db);
 $selected_tags = $post ? array_column(blog_get_post_tags($db, (int) $post['id']), 'id') : [];
 $revisions = $post ? blog_get_revisions($db, (int) $post['id']) : [];
@@ -62,6 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $status_in = $_POST['status'] ?? 'draft';
         $scheduled_raw = trim($_POST['scheduled_at'] ?? '');
         $category_id = !empty($_POST['category_id']) ? (int) $_POST['category_id'] : null;
+        $series_id = !empty($_POST['series_id']) ? (int) $_POST['series_id'] : null;
+        $series_order = (int) ($_POST['series_order'] ?? 0);
+        $is_premium = !empty($_POST['is_premium']) ? 1 : 0;
         $meta_title = trim($_POST['meta_title'] ?? '');
         $meta_description = trim($_POST['meta_description'] ?? '');
         $featured_image = trim($_POST['featured_image'] ?? '');
@@ -132,13 +136,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($post) {
                     $stmt = $db->prepare('
                         UPDATE blog_posts SET
-                            category_id = ?, title = ?, excerpt = ?, content = ?, status = ?,
-                            meta_title = ?, meta_description = ?, featured_image = ?,
+                            category_id = ?, series_id = ?, series_order = ?, title = ?, excerpt = ?, content = ?, status = ?,
+                            meta_title = ?, meta_description = ?, featured_image = ?, is_premium = ?,
                             published_at = ?, scheduled_at = ?, updated_at = NOW()
                         WHERE id = ?
                     ');
                     $stmt->execute([
                         $category_id,
+                        $series_id,
+                        $series_order,
                         $title,
                         $excerpt !== '' ? $excerpt : null,
                         $clean,
@@ -146,6 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $meta_title !== '' ? $meta_title : null,
                         $meta_description !== '' ? $meta_description : null,
                         $featured_image !== '' ? $featured_image : null,
+                        $is_premium,
                         $published_at,
                         $scheduled_at,
                         (int) $post['id'],
@@ -155,12 +162,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     $stmt = $db->prepare('
                         INSERT INTO blog_posts
-                        (user_id, category_id, title, slug, excerpt, content, status, meta_title, meta_description, featured_image, published_at, scheduled_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        (user_id, category_id, series_id, series_order, title, slug, excerpt, content, status, meta_title, meta_description, featured_image, is_premium, published_at, scheduled_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ');
                     $stmt->execute([
                         (int) $_SESSION['user_id'],
                         $category_id,
+                        $series_id,
+                        $series_order,
                         $title,
                         $slug,
                         $excerpt !== '' ? $excerpt : null,
@@ -169,6 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $meta_title !== '' ? $meta_title : null,
                         $meta_description !== '' ? $meta_description : null,
                         $featured_image !== '' ? $featured_image : null,
+                        $is_premium,
                         $published_at,
                         $scheduled_at,
                     ]);
@@ -354,6 +364,28 @@ include '../../includes/header.php';
                             </option>
                         <?php endforeach; ?>
                     </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="series_id">series</label>
+                    <select class="form-select" id="series_id" name="series_id">
+                        <option value="">none</option>
+                        <?php foreach ($series_list as $s): ?>
+                            <option value="<?php echo (int) $s['id']; ?>"
+                                <?php echo ((int)($post['series_id'] ?? 0) === (int)$s['id']) ? 'selected' : ''; ?>>
+                                <?php echo sanitize_input($s['title']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="series_order">series order</label>
+                    <input type="number" class="form-control" id="series_order" name="series_order" min="0" max="999"
+                           value="<?php echo (int)($post['series_order'] ?? 0); ?>">
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="is_premium" name="is_premium" value="1"
+                        <?php echo !empty($post['is_premium']) ? 'checked' : ''; ?>>
+                    <label class="form-check-label" for="is_premium">members only (paywall)</label>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">tags</label>

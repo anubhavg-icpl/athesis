@@ -1,0 +1,14 @@
+# Root: pretty URLs when docroot is project root
+RewriteEngine On
+ErrorDocument 404 /public/404.php
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^blog/post/([a-zA-Z0-9\-]+)/?$ public/blog/post.php?slug=$1 [L,QSA]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^blog/series/([a-zA-Z0-9\-]+)/?$ public/blog/series.php?slug=$1 [L,QSA]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^blog/archive/([0-9]{4})/([0-9]{1,2})/?$ public/blog/archive.php?y=$1&m=$2 [L,QSA]

@@ -1,0 +1,19 @@
+# Pretty blog URLs + custom 404 (Apache)
+RewriteEngine On
+
+# Custom 404
+ErrorDocument 404 /public/404.php
+
+# /public/blog/post/my-slug -> post.php?slug=my-slug
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^blog/post/([a-zA-Z0-9\-]+)/?$ blog/post.php?slug=$1 [L,QSA]
+
+# /public/blog/series/my-slug
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^blog/series/([a-zA-Z0-9\-]+)/?$ blog/series.php?slug=$1 [L,QSA]
+
+# /public/blog/archive/YYYY/MM
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^blog/archive/([0-9]{4})/([0-9]{1,2})/?$ blog/archive.php?y=$1&m=$2 [L,QSA]
