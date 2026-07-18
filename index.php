@@ -1,6 +1,6 @@
 <?php
 /**
- * PHP Forum - Root Redirect
+ * Athesis - Root Redirect
  * Redirects users to the public directory where the main application is located
  */
 

@@ -42,10 +42,10 @@ if (!empty($document_root) && strpos($project_root, $document_root) === 0) {
 }
 
 // Site configuration
-define('SITE_NAME', 'PHP Forum');
+define('SITE_NAME', 'Athesis');
 define('SITE_URL', $protocol . '://' . $host . $base_path);
 define('BASE_PATH', $base_path);
-define('SITE_DESCRIPTION', 'A sparse community forum. Anyone can read. Members write.');
+define('SITE_DESCRIPTION', 'Athesis — sparse community forum and blog. Anyone can read. Members write.');
 
 // Security settings
 define('SESSION_TIMEOUT', 3600); // 1 hour

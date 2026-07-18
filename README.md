@@ -1,4 +1,4 @@
-# PHP Forum System
+# Athesis
 
 A modern, secure, and responsive forum system built with PHP and MySQL. This application provides a complete discussion platform with user authentication, topic management, threaded replies, and comprehensive security features.
 
@@ -15,7 +15,7 @@ A modern, secure, and responsive forum system built with PHP and MySQL. This app
 
 ## 📋 Project Overview
 
-The PHP Forum System is a comprehensive discussion platform designed for communities to engage in meaningful conversations. It features a modern, responsive design with robust security measures and an intuitive user interface. The system supports user registration, topic creation, threaded discussions, search functionality, and role-based access control.
+Athesis is a community forum and professional blog with an Odyssey-inspired pure-black UI. It supports registration, topics and replies, public signatures, a full blog stack (drafts, SEO, media, schedule, series, paywall), and role-based access control.
 
 ## ✨ Key Features
 
@@ -166,7 +166,7 @@ Default admin credentials (change immediately):
 
 ## 🎯 Intended Use
 
-This PHP Forum System is designed for:
+Athesis is designed for:
 
 - **Educational Purposes**: Learning PHP, MySQL, and web development
 - **Small Communities**: Local clubs, study groups, or hobby communities

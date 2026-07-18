@@ -1,5 +1,5 @@
--- PHP Forum System Database Setup
--- This file creates the necessary tables for the forum system
+-- Athesis database setup
+-- Forum + blog tables for the Athesis project
 
 -- Create database (IF NOT EXISTS: works for manual import AND Docker entrypoint init)
 CREATE DATABASE IF NOT EXISTS php_forum CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
