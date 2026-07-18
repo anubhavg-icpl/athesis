@@ -50,7 +50,7 @@ $brand_favicon = url('public/images/brand/favicon.png');
     <!-- Bootstrap (grid + utilities only; fully restyled) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom Odyssey-inspired theme -->
-    <link href="<?php echo url('public/css/style.css'); ?>?v=<?php echo filemtime(__DIR__ . '/../public/css/style.css'); ?>?v2" rel="stylesheet">
+    <link href="<?php echo url('public/css/style.css'); ?>?v=<?php echo @filemtime(__DIR__ . '/../public/css/style.css') ?: time(); ?>" rel="stylesheet">
     <?php if (defined('PLAUSIBLE_DOMAIN') && PLAUSIBLE_DOMAIN !== ''): ?>
     <script defer data-domain="<?php echo sanitize_input(PLAUSIBLE_DOMAIN); ?>" src="https://plausible.io/js/script.js"></script>
     <?php endif; ?>

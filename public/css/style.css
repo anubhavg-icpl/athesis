@@ -168,7 +168,7 @@ body {
 .ody-brand {
     display: flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: 0.55rem;
     border-bottom: none !important;
     color: var(--text) !important;
     font-weight: 500;
@@ -179,13 +179,15 @@ body {
 }
 
 .ody-brand-mark {
-    width: 22px;
-    height: 22px;
-    object-fit: cover;
-    border: 1px solid var(--border);
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    object-position: center;
+    border: 0;
     flex-shrink: 0;
     display: block;
-    background: #000;
+    background: transparent;
+    image-rendering: auto;
 }
 
 .ody-brand:hover {
@@ -1511,22 +1513,157 @@ small.text-muted {
     letter-spacing: 0.06em;
 }
 
-/* Brand / generated art — static, CSS-aligned */
+/* ---------- Home hero: image + copy properly aligned ---------- */
+.ody-home-hero {
+    margin: 0 0 2.75rem;
+    padding: 0 0 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.ody-home-banner {
+    position: relative;
+    width: 100%;
+    margin: 0 0 1.75rem;
+    border: 1px solid var(--border);
+    background: #000;
+    overflow: hidden;
+    /* Crop to the glowing $_ on the right of the art */
+    aspect-ratio: 21 / 9;
+    min-height: 160px;
+    max-height: 280px;
+}
+
+.ody-home-banner img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 72% center; /* pull $_ into view */
+    filter: contrast(1.08) saturate(1.1);
+}
+
+.ody-home-banner-scrim {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.2) 45%, transparent 70%),
+        linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.65) 100%);
+}
+
+.ody-home-banner-frame {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 1px rgba(255, 0, 51, 0.12);
+}
+
+.ody-home-intro {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.25rem 1.5rem;
+    align-items: start;
+}
+
+.ody-home-intro-mark {
+    width: 72px;
+    height: 72px;
+    border: 1px solid var(--border);
+    background: #000;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.ody-home-intro-mark img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    transform: scale(1.15); /* mark has large black padding */
+}
+
+.ody-home-intro-copy {
+    min-width: 0;
+}
+
+.ody-home-intro-copy .label {
+    display: block;
+    margin-bottom: 0.85rem;
+}
+
+.ody-home-intro-copy h1 {
+    margin: 0 0 0.85rem;
+    line-height: 1.15;
+}
+
+.ody-home-intro-copy > p {
+    margin: 0 0 0.85rem;
+    max-width: 36rem;
+}
+
+.ody-home-sub {
+    font-size: 0.9375rem !important;
+    letter-spacing: 0.02em;
+    color: var(--text-dim) !important;
+    margin-bottom: 1.35rem !important;
+    line-height: 1.7 !important;
+}
+
+.ody-home-sub a {
+    color: var(--accent);
+    border-bottom: 1px solid rgba(255, 0, 51, 0.45);
+}
+
+.ody-home-sub a:hover {
+    color: var(--accent-hover);
+    border-bottom-color: var(--accent-hover);
+}
+
+.ody-home-intro .ody-hero-actions {
+    margin-top: 0.25rem;
+}
+
+@media (max-width: 640px) {
+    .ody-home-intro {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .ody-home-intro-mark {
+        width: 56px;
+        height: 56px;
+    }
+
+    .ody-home-banner {
+        aspect-ratio: 16 / 9;
+        max-height: 200px;
+    }
+
+    .ody-home-banner img {
+        object-position: 80% center;
+    }
+}
+
+/* Other pages that still use art helpers */
 .ody-hero-with-art {
     display: grid;
     gap: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 @media (min-width: 720px) {
     .ody-hero-with-art {
-        grid-template-columns: 1.15fr 1fr;
-        align-items: end;
+        grid-template-columns: 1fr minmax(140px, 200px);
+        align-items: center;
         gap: 2rem;
     }
 
+    .ody-hero-with-art .ody-hero-visual,
     .ody-hero-with-art .ody-hero-visual-sm,
     .ody-hero-with-art .ody-hero-visual-mark {
         order: 2;
+        justify-self: end;
     }
 }
 
@@ -1535,24 +1672,23 @@ small.text-muted {
     border: 1px solid var(--border);
     background: #000;
     overflow: hidden;
-    aspect-ratio: 16 / 9;
-}
-
-.ody-hero-visual-sm {
     aspect-ratio: 1 / 1;
-    max-width: 280px;
+    width: 100%;
+    max-width: 200px;
 }
 
+.ody-hero-visual-sm,
 .ody-hero-visual-mark {
     aspect-ratio: 1 / 1;
-    max-width: 200px;
+    max-width: 180px;
 }
 
 .ody-hero-visual img {
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    object-position: center;
     filter: contrast(1.05) saturate(1.05);
 }
 
@@ -1560,8 +1696,7 @@ small.text-muted {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
-    border: 0;
+    background: linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, 0.4) 100%);
 }
 
 .ody-hero-copy {
@@ -1575,18 +1710,28 @@ small.text-muted {
 }
 
 .ody-empty-img {
-    width: min(180px, 50vw);
+    width: min(160px, 46vw);
     height: auto;
     margin-bottom: 1rem;
     border: 1px solid var(--border);
-    opacity: 0.9;
+    opacity: 0.92;
+    object-fit: contain;
+    background: #000;
 }
 
 .ody-blog-cover {
-    max-height: 360px;
+    max-height: 320px;
+    border-bottom: 1px solid var(--border);
+    background: #000;
 }
 
 .ody-blog-cover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-height: 320px;
+    object-fit: cover;
+    object-position: center;
     filter: contrast(1.04);
 }
 
