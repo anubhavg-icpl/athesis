@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#000"/>
+  <text x="40" y="36" fill="#ff0033" font-family="ui-monospace,monospace" font-size="14" letter-spacing="3">ATHESIS · DATA MODEL</text>
+
+  <!-- users -->
+  <rect x="40" y="70" width="200" height="160" fill="#050505" stroke="#ff0033"/>
+  <text x="55" y="95" fill="#ff0033" font-family="ui-monospace,monospace" font-size="12">users</text>
+  <text x="55" y="120" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">id · username · email</text>
+  <text x="55" y="140" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">password_hash</text>
+  <text x="55" y="160" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">display_name · signature</text>
+  <text x="55" y="180" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">user_role · is_member</text>
+  <text x="55" y="200" fill="#8a8680" font-family="ui-monospace,monospace" font-size="11">user|author|mod|admin</text>
+
+  <!-- forum -->
+  <rect x="280" y="70" width="200" height="160" fill="#050505" stroke="#1a1a1a"/>
+  <text x="295" y="95" fill="#ff0033" font-family="ui-monospace,monospace" font-size="12">forum</text>
+  <text x="295" y="120" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">topics</text>
+  <text x="295" y="140" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">replies</text>
+  <text x="295" y="160" fill="#8a8680" font-family="ui-monospace,monospace" font-size="11">user_sessions</text>
+  <text x="295" y="190" fill="#5a5650" font-family="ui-monospace,monospace" font-size="10">threaded discussion</text>
+  <text x="295" y="210" fill="#5a5650" font-family="ui-monospace,monospace" font-size="10">signatures on posts</text>
+
+  <!-- blog core -->
+  <rect x="520" y="70" width="200" height="160" fill="#050505" stroke="#1a1a1a"/>
+  <text x="535" y="95" fill="#ff0033" font-family="ui-monospace,monospace" font-size="12">blog core</text>
+  <text x="535" y="120" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">blog_posts</text>
+  <text x="535" y="140" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">blog_categories</text>
+  <text x="535" y="160" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">blog_tags · post_tags</text>
+  <text x="535" y="180" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">blog_comments</text>
+  <text x="535" y="210" fill="#5a5650" font-family="ui-monospace,monospace" font-size="10">draft|published|scheduled</text>
+
+  <!-- blog editorial -->
+  <rect x="760" y="70" width="160" height="160" fill="#050505" stroke="#1a1a1a"/>
+  <text x="775" y="95" fill="#ff0033" font-family="ui-monospace,monospace" font-size="12">editorial</text>
+  <text x="775" y="120" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">blog_revisions</text>
+  <text x="775" y="140" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">blog_media</text>
+  <text x="775" y="160" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">blog_series</text>
+  <text x="775" y="190" fill="#5a5650" font-family="ui-monospace,monospace" font-size="10">is_premium</text>
+  <text x="775" y="210" fill="#5a5650" font-family="ui-monospace,monospace" font-size="10">scheduled_at</text>
+
+  <!-- growth -->
+  <rect x="40" y="280" width="280" height="120" fill="#050505" stroke="#1a1a1a"/>
+  <text x="55" y="305" fill="#ff0033" font-family="ui-monospace,monospace" font-size="12">growth</text>
+  <text x="55" y="330" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">blog_subscribers</text>
+  <text x="55" y="350" fill="#cfcbc6" font-family="ui-monospace,monospace" font-size="11">site_messages (contact)</text>
+  <text x="55" y="375" fill="#5a5650" font-family="ui-monospace,monospace" font-size="10">newsletter · contact form</text>
+
+  <!-- lines -->
+  <line x1="240" y1="150" x2="280" y2="150" stroke="#ff0033" stroke-width="1"/>
+  <line x1="480" y1="150" x2="520" y2="150" stroke="#ff0033" stroke-width="1"/>
+  <line x1="720" y1="150" x2="760" y2="150" stroke="#ff0033" stroke-width="1"/>
+  <line x1="140" y1="230" x2="140" y2="280" stroke="#ff0033" stroke-width="1"/>
+
+  <text x="40" y="450" fill="#8a8680" font-family="ui-monospace,monospace" font-size="11">Migrations: sql/forum_setup.sql + migration_add_signature.sql</text>
+  <text x="40" y="470" fill="#8a8680" font-family="ui-monospace,monospace" font-size="11">+ migration_blog_phase1.sql · phase2.sql · phase3_4.sql</text>
+  <text x="40" y="500" fill="#5a5650" font-family="ui-monospace,monospace" font-size="11">PDO · prepared statements · utf8mb4</text>
+</svg>
