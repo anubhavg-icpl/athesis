@@ -6,6 +6,7 @@
                 <span class="prompt" style="color: var(--accent);">$_</span>
                 <?php echo strtolower(SITE_NAME); ?>
                 <span> · <?php echo date('Y'); ?></span>
+                <span class="ody-footer-motto"> · can&rsquo;t stop · won&rsquo;t stop</span>
             </div>
             <div class="ody-footer-links">
                 <a href="<?php echo url('public/index.php'); ?>">home</a>

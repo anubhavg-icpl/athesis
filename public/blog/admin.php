@@ -192,7 +192,7 @@ include '../../includes/header.php';
     </div>
 
     <?php if (empty($posts)): ?>
-        <div class="ody-empty"><p>no posts match.</p></div>
+        <div class="ody-empty"><p>no posts match. either your filter is ruthless or the writers are.</p></div>
     <?php else: ?>
         <div class="table-responsive ody-admin-table">
             <table class="table table-hover mb-0">

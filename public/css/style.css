@@ -1496,6 +1496,11 @@ small.text-muted {
     margin-bottom: 0;
 }
 
+.ody-footer-motto {
+    color: var(--text-mute);
+    letter-spacing: 0.06em;
+}
+
 .topic-content a,
 .reply-content a,
 .ody-post-body a {

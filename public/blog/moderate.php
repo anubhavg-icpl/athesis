@@ -42,7 +42,7 @@ include '../../includes/header.php';
 </div>
 
 <?php if (empty($pending)): ?>
-    <div class="ody-empty"><p>queue clear. no pending comments.</p></div>
+    <div class="ody-empty"><p>queue clear. even the spambots took a day off. suspicious.</p></div>
 <?php else: ?>
     <?php foreach ($pending as $c): ?>
         <article class="ody-post mb-3">

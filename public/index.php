@@ -44,16 +44,16 @@ include '../includes/header.php';
 ?>
 
 <section class="ody-hero">
-    <span class="label">community · forum · blog</span>
+    <span class="label">community · forum · blog · no brakes</span>
     <h1>The <span class="accent-word">forum</span>.</h1>
-    <p>Anyone can read. Members write. Long-form lives on the blog. Knowledge stays open.</p>
+    <p>Anyone can read. Members write. Long-form lives on the blog. We keep shipping until the meme gets tired.</p>
     <p style="font-size:0.9375rem;letter-spacing:0.02em;color:var(--text-dim);margin-bottom:1.75rem;line-height:1.7">
         <?php if (!is_logged_in()): ?>
             <a href="auth/login.php" style="color:#ff0033;border-bottom:1px solid rgba(255,0,51,.45)">$_ log in</a>
-            to post · reading is open to all.
+            to post · reading is free · quitting is not our brand.
         <?php else: ?>
             <a href="<?php echo url('public/blog/write.php'); ?>" style="color:#ff0033;border-bottom:1px solid rgba(255,0,51,.45)">$_ write</a>
-            · sparse discussions. no noise. just signal.
+            · sparse discussions. no noise. just signal. still here.
         <?php endif; ?>
     </p>
     <div class="ody-hero-actions">

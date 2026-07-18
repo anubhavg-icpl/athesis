@@ -67,9 +67,9 @@ include '../../includes/header.php';
 ?>
 
 <section class="ody-hero">
-    <span class="label">blog · publish</span>
+    <span class="label">blog · publish · still going</span>
     <h1>The <span class="accent-word">blog</span>.</h1>
-    <p>Guides, notes, and long-form. Sparse signal. No noise.</p>
+    <p>Guides, notes, and long-form. Sparse signal. No noise. Phases optional. Shipping compulsory.</p>
     <div class="ody-hero-actions">
         <?php if (is_logged_in()): ?>
             <a class="btn btn-primary" href="<?php echo url('public/blog/write.php'); ?>">write →</a>
@@ -127,9 +127,9 @@ include '../../includes/header.php';
 <?php if (empty($posts)): ?>
     <div class="ody-empty">
         <div class="icon">//</div>
-        <p>no published posts yet.</p>
+        <p>no posts. the void is patient. we are not.</p>
         <?php if (is_logged_in()): ?>
-            <a class="btn btn-primary btn-sm mt-2" href="<?php echo url('public/blog/write.php'); ?>">write the first one</a>
+            <a class="btn btn-primary btn-sm mt-2" href="<?php echo url('public/blog/write.php'); ?>">break the silence →</a>
         <?php endif; ?>
     </div>
 <?php else: ?>

@@ -105,11 +105,11 @@ include '../../includes/header.php';
         <?php if (!empty($search)): ?>
             <p>no topics match your search.</p>
         <?php else: ?>
-            <p>no topics yet.
+            <p>no topics. crickets, but make it monochrome.
             <?php if (is_logged_in()): ?>
-                <a href="create_topic.php">create the first one</a>
+                <a href="create_topic.php">start the first one</a>
             <?php else: ?>
-                <a href="../auth/login.php">login</a> to start
+                <a href="../auth/login.php">login</a> if you insist on existing here
             <?php endif; ?>
             </p>
         <?php endif; ?>
