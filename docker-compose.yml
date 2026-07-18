@@ -28,6 +28,8 @@ services:
       DB_USER: ${MYSQL_USER:-forum}
       DB_PASS: ${MYSQL_PASSWORD:-forumpass}
       APP_DEBUG: ${APP_DEBUG:-0}
+      # AGORA agent API key — must match AGENT_API_KEY in .mcp.json. Change before any real deploy.
+      AGENT_API_KEY: ${AGENT_API_KEY:-changeme-dev-key}
     ports:
       - "8088:80"
     restart: unless-stopped
