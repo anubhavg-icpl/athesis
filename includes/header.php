@@ -15,8 +15,11 @@ $is_profile = (bool) preg_match('#/auth/profile\.php#', $script);
 $meta_description = $page_description ?? SITE_DESCRIPTION;
 $meta_title = isset($page_title) ? sanitize_input($page_title) . ' — ' . SITE_NAME : SITE_NAME;
 $og_url = $page_canonical ?? (SITE_URL . ($_SERVER['REQUEST_URI'] ?? ''));
-$og_image = $page_image ?? '';
+$default_og = full_url('public/images/brand/hero-banner.jpg');
+$og_image = !empty($page_image) ? $page_image : $default_og;
 $og_type = $page_og_type ?? 'website';
+$brand_mark = url('public/images/brand/mark-red.jpg');
+$brand_favicon = url('public/images/brand/favicon.png');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -32,11 +35,12 @@ $og_type = $page_og_type ?? 'website';
     <meta property="og:description" content="<?php echo sanitize_input($meta_description); ?>">
     <meta property="og:type" content="<?php echo sanitize_input($og_type); ?>">
     <meta property="og:url" content="<?php echo sanitize_input($og_url); ?>">
-    <?php if ($og_image !== ''): ?>
     <meta property="og:image" content="<?php echo sanitize_input($og_image); ?>">
-    <?php endif; ?>
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="<?php echo sanitize_input($og_image); ?>">
     <meta name="theme-color" content="#000000">
+    <link rel="icon" type="image/png" href="<?php echo $brand_favicon; ?>">
+    <link rel="apple-touch-icon" href="<?php echo url('public/images/brand/apple-touch.png'); ?>">
     <link rel="alternate" type="application/rss+xml" title="<?php echo sanitize_input(SITE_NAME); ?> Blog" href="<?php echo url('public/blog/rss.php'); ?>">
 
     <!-- JetBrains Mono -->
@@ -59,6 +63,7 @@ $og_type = $page_og_type ?? 'website';
     <header class="ody-nav">
         <div class="ody-nav-inner">
             <a class="ody-brand" href="<?php echo url('public/index.php'); ?>">
+                <img class="ody-brand-mark" src="<?php echo $brand_mark; ?>" alt="" width="22" height="22">
                 <span class="prompt">$_</span><?php echo strtolower(SITE_NAME); ?>
             </a>
 

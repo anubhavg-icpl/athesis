@@ -129,9 +129,14 @@ include '../../includes/header.php';
         <?php endif; ?>
     </div>
 
-    <?php if (!empty($post['featured_image'])): ?>
-        <div class="ody-blog-cover"><img src="<?php echo sanitize_input($post['featured_image']); ?>" alt=""></div>
-    <?php endif; ?>
+    <?php
+    $cover = !empty($post['featured_image'])
+        ? $post['featured_image']
+        : url('public/images/brand/blog-cover.jpg');
+    ?>
+    <div class="ody-blog-cover">
+        <img src="<?php echo sanitize_input($cover); ?>" alt="" width="1200" height="640" loading="lazy">
+    </div>
 
     <?php if (!empty($post['excerpt'])): ?>
         <p class="ody-blog-excerpt"><?php echo sanitize_input($post['excerpt']); ?></p>

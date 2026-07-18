@@ -66,18 +66,24 @@ $tags = blog_get_tags($db);
 include '../../includes/header.php';
 ?>
 
-<section class="ody-hero">
-    <span class="label">blog · publish · still going</span>
-    <h1>The <span class="accent-word">blog</span>.</h1>
-    <p>Guides, notes, and long-form. Sparse signal. No noise. Phases optional. Shipping compulsory.</p>
-    <div class="ody-hero-actions">
-        <?php if (is_logged_in()): ?>
-            <a class="btn btn-primary" href="<?php echo url('public/blog/write.php'); ?>">write →</a>
-        <?php endif; ?>
-        <a class="ody-link-btn" href="<?php echo url('public/blog/archive.php'); ?>">archive</a>
-        <a class="ody-link-btn" href="<?php echo url('public/blog/series.php'); ?>">series</a>
-        <a class="ody-link-btn" href="<?php echo url('public/blog/rss.php'); ?>">rss</a>
-        <a class="ody-link-btn" href="<?php echo url('public/blog/sitemap.php'); ?>">sitemap</a>
+<section class="ody-hero ody-hero-with-art">
+    <div class="ody-hero-visual ody-hero-visual-sm" aria-hidden="true">
+        <img src="<?php echo url('public/images/brand/blog-cover.jpg'); ?>" alt="" width="800" height="800" loading="eager">
+        <div class="ody-hero-visual-fade"></div>
+    </div>
+    <div class="ody-hero-copy">
+        <span class="label">blog · publish · still going</span>
+        <h1>The <span class="accent-word">blog</span>.</h1>
+        <p>Guides, notes, and long-form. Sparse signal. No noise. Phases optional. Shipping compulsory.</p>
+        <div class="ody-hero-actions">
+            <?php if (is_logged_in()): ?>
+                <a class="btn btn-primary" href="<?php echo url('public/blog/write.php'); ?>">write →</a>
+            <?php endif; ?>
+            <a class="ody-link-btn" href="<?php echo url('public/blog/archive.php'); ?>">archive</a>
+            <a class="ody-link-btn" href="<?php echo url('public/blog/series.php'); ?>">series</a>
+            <a class="ody-link-btn" href="<?php echo url('public/blog/rss.php'); ?>">rss</a>
+            <a class="ody-link-btn" href="<?php echo url('public/blog/sitemap.php'); ?>">sitemap</a>
+        </div>
     </div>
 </section>
 
@@ -125,7 +131,8 @@ include '../../includes/header.php';
 <?php endif; ?>
 
 <?php if (empty($posts)): ?>
-    <div class="ody-empty">
+    <div class="ody-empty ody-empty-art">
+        <img class="ody-empty-img" src="<?php echo url('public/images/brand/empty-void.jpg'); ?>" alt="" width="240" height="320" loading="lazy">
         <div class="icon">//</div>
         <p>no posts. the void is patient. we are not.</p>
         <?php if (is_logged_in()): ?>

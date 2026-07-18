@@ -100,7 +100,8 @@ include '../../includes/header.php';
 </div>
 
 <?php if (empty($topics)): ?>
-    <div class="ody-empty">
+    <div class="ody-empty ody-empty-art">
+        <img class="ody-empty-img" src="<?php echo url('public/images/brand/empty-void.jpg'); ?>" alt="" width="180" height="240" loading="lazy">
         <div class="icon">//</div>
         <?php if (!empty($search)): ?>
             <p>no topics match your search.</p>

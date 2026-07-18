@@ -4,10 +4,16 @@ $page_title = 'About';
 $page_description = 'About ' . SITE_NAME;
 include '../../includes/header.php';
 ?>
-<section class="ody-hero">
-    <span class="label">site · about · still shipping</span>
-    <h1>About <span class="accent-word"><?php echo sanitize_input(strtolower(SITE_NAME)); ?></span>.</h1>
-    <p>Forum. Blog. Phases 1–4. Black mono. Chatak red. We said “done” and then kept going anyway.</p>
+<section class="ody-hero ody-hero-with-art">
+    <div class="ody-hero-visual ody-hero-visual-mark" aria-hidden="true">
+        <img src="<?php echo url('public/images/brand/mark-red.jpg'); ?>" alt="" width="320" height="320" loading="eager">
+        <div class="ody-hero-visual-fade"></div>
+    </div>
+    <div class="ody-hero-copy">
+        <span class="label">site · about · still shipping</span>
+        <h1>About <span class="accent-word"><?php echo sanitize_input(strtolower(SITE_NAME)); ?></span>.</h1>
+        <p>Forum. Blog. Phases 1–4. Black mono. Chatak red. We said “done” and then kept going anyway.</p>
+    </div>
 </section>
 <div class="ody-panel">
     <div class="ody-panel-body" style="color:var(--text-body);line-height:1.8">
