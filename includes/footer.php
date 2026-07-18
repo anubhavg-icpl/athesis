@@ -9,9 +9,11 @@
             </div>
             <div class="ody-footer-links">
                 <a href="<?php echo url('public/index.php'); ?>">home</a>
+                <a href="<?php echo url('public/blog/index.php'); ?>">blog</a>
                 <a href="<?php echo url('public/forum/topics.php'); ?>">topics</a>
+                <a href="<?php echo url('public/blog/rss.php'); ?>">rss</a>
                 <?php if (is_logged_in()): ?>
-                    <a href="<?php echo url('public/forum/create_topic.php'); ?>">new topic</a>
+                    <a href="<?php echo url('public/blog/write.php'); ?>">write</a>
                     <a href="<?php echo url('public/auth/profile.php'); ?>">profile</a>
                 <?php else: ?>
                     <a href="<?php echo url('public/auth/login.php'); ?>">login</a>

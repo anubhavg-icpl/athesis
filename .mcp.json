@@ -1,0 +1,60 @@
+{
+  "mcpServers": {
+    "cloudflare-docs": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://docs.mcp.cloudflare.com/mcp"]
+    },
+    "cloudflare-bindings": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://bindings.mcp.cloudflare.com/mcp"]
+    },
+    "cloudflare-builds": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://builds.mcp.cloudflare.com/mcp"]
+    },
+    "cloudflare-observability": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://observability.mcp.cloudflare.com/mcp"]
+    },
+    "cloudflare-containers": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://containers.mcp.cloudflare.com/mcp"]
+    },
+    "cloudflare-browser": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://browser.mcp.cloudflare.com/mcp"]
+    },
+    "cloudflare-logpush": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://logs.mcp.cloudflare.com/mcp"]
+    },
+    "cloudflare-ai-gateway": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://ai-gateway.mcp.cloudflare.com/mcp"]
+    },
+    "cloudflare-auditlogs": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://auditlogs.mcp.cloudflare.com/mcp"]
+    },
+    "cloudflare-dns-analytics": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://dns-analytics.mcp.cloudflare.com/mcp"]
+    },
+    "cloudflare-dex": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://dex.mcp.cloudflare.com/mcp"]
+    },
+    "cloudflare-casb": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://casb.mcp.cloudflare.com/mcp"]
+    },
+    "cloudflare-graphql": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://graphql.mcp.cloudflare.com/mcp"]
+    },
+    "cloudflare-blog": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://blog.mcp.cloudflare.com/mcp"]
+    }
+  }
+}

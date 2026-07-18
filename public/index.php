@@ -44,29 +44,70 @@ include '../includes/header.php';
 ?>
 
 <section class="ody-hero">
-    <span class="label">community · forum</span>
+    <span class="label">community · forum · blog</span>
     <h1>The <span class="accent-word">forum</span>.</h1>
-    <p>Anyone can read. Members write. The knowledge stays open.</p>
+    <p>Anyone can read. Members write. Long-form lives on the blog. Knowledge stays open.</p>
     <p style="font-size:0.9375rem;letter-spacing:0.02em;color:var(--text-dim);margin-bottom:1.75rem;line-height:1.7">
         <?php if (!is_logged_in()): ?>
             <a href="auth/login.php" style="color:#ff0033;border-bottom:1px solid rgba(255,0,51,.45)">$_ log in</a>
             to post · reading is open to all.
         <?php else: ?>
-            <a href="forum/create_topic.php" style="color:#ff0033;border-bottom:1px solid rgba(255,0,51,.45)">$_ new topic</a>
+            <a href="<?php echo url('public/blog/write.php'); ?>" style="color:#ff0033;border-bottom:1px solid rgba(255,0,51,.45)">$_ write</a>
             · sparse discussions. no noise. just signal.
         <?php endif; ?>
     </p>
     <div class="ody-hero-actions">
+        <a class="btn btn-primary" href="<?php echo url('public/blog/index.php'); ?>">blog →</a>
         <?php if (!is_logged_in()): ?>
-            <a class="btn btn-primary" href="auth/register.php">join →</a>
-            <a class="ody-link-btn" href="forum/topics.php">browse topics</a>
+            <a class="ody-link-btn" href="auth/register.php">join</a>
+            <a class="ody-link-btn" href="forum/topics.php">topics</a>
         <?php else: ?>
-            <a class="btn btn-primary" href="forum/create_topic.php">new topic →</a>
-            <a class="ody-link-btn" href="forum/topics.php">browse all</a>
+            <a class="ody-link-btn" href="forum/topics.php">topics</a>
             <a class="ody-link-btn" href="auth/profile.php">profile</a>
         <?php endif; ?>
     </div>
 </section>
+
+<?php
+// Latest blog posts strip
+try {
+    $blog_db = getDB();
+    $blog_stmt = $blog_db->query("
+        SELECT p.title, p.slug, p.excerpt, p.published_at, u.display_name AS author_name
+        FROM blog_posts p
+        JOIN users u ON u.id = p.user_id
+        WHERE p.status = 'published'
+        ORDER BY p.published_at DESC
+        LIMIT 4
+    ");
+    $latest_posts = $blog_stmt->fetchAll();
+} catch (Throwable $e) {
+    $latest_posts = [];
+}
+?>
+<?php if (!empty($latest_posts)): ?>
+<section class="ody-section">
+    <div class="ody-section-head">
+        <h2>from the blog</h2>
+        <a href="<?php echo url('public/blog/index.php'); ?>">all posts →</a>
+    </div>
+    <div class="ody-list">
+        <?php foreach ($latest_posts as $bp): ?>
+            <a class="ody-list-item" href="<?php echo url('public/blog/post.php?slug=' . urlencode($bp['slug'])); ?>">
+                <span class="marker">▸</span>
+                <div class="body">
+                    <h3 class="title"><span class="title-text"><?php echo sanitize_input($bp['title']); ?></span></h3>
+                    <div class="meta">
+                        <span><?php echo sanitize_input($bp['author_name']); ?></span>
+                        <span><?php echo $bp['published_at'] ? format_date($bp['published_at']) : ''; ?></span>
+                    </div>
+                </div>
+                <div class="stats"><span class="open-hint">read →</span></div>
+            </a>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
 
 <div class="ody-stats">
     <div class="ody-stat">

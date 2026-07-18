@@ -55,6 +55,7 @@ define('LOGIN_LOCKOUT_TIME', 900); // 15 minutes
 // Pagination settings
 define('TOPICS_PER_PAGE', 10);
 define('REPLIES_PER_PAGE', 20);
+define('POSTS_PER_PAGE', 10);
 
 // File upload settings (for future use)
 define('MAX_UPLOAD_SIZE', 2097152); // 2MB
@@ -68,6 +69,7 @@ require_once __DIR__ . '/security.php';
 
 // Include common functions
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/blog.php';
 
 // Set timezone
 date_default_timezone_set('UTC');

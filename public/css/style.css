@@ -1263,6 +1263,72 @@ small.text-muted {
     white-space: pre-wrap;
 }
 
+/* ---------- Blog Phase 1 ---------- */
+.ody-blog-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.ody-chip {
+    display: inline-block;
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 0.35rem 0.65rem;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+}
+
+.ody-chip:hover,
+.ody-chip.active {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.ody-blog-excerpt {
+    padding: 0 1.2rem;
+    margin: 0 0 0.5rem;
+    font-size: var(--text-base);
+    color: var(--text-dim);
+    font-style: normal;
+    border-left: 2px solid var(--accent);
+    margin-left: 1.2rem;
+    padding-left: 1rem;
+}
+
+.ody-blog-cover {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.ody-blog-cover img {
+    display: block;
+    width: 100%;
+    max-height: 320px;
+    object-fit: cover;
+}
+
+.ody-tag-checks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.ody-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--text-sm);
+    color: var(--text-dim);
+    cursor: pointer;
+}
+
+.ody-check input {
+    accent-color: var(--accent);
+}
+
 .topic-content a,
 .reply-content a,
 .ody-post-body a {

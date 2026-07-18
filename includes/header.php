@@ -7,18 +7,37 @@ if (!defined('SITE_NAME')) {
 $script = $_SERVER['SCRIPT_NAME'] ?? '';
 $is_home = (bool) preg_match('#/public/index\.php$#', $script) || (bool) preg_match('#/public/?$#', $script);
 $is_topics = (bool) preg_match('#/forum/(topics|view_topic|create_topic|edit_topic|edit_reply)\.php#', $script);
+$is_blog = (bool) preg_match('#/blog/#', $script);
 $is_login = (bool) preg_match('#/auth/login\.php#', $script);
 $is_register = (bool) preg_match('#/auth/register\.php#', $script);
 $is_profile = (bool) preg_match('#/auth/profile\.php#', $script);
+
+$meta_description = $page_description ?? SITE_DESCRIPTION;
+$meta_title = isset($page_title) ? sanitize_input($page_title) . ' — ' . SITE_NAME : SITE_NAME;
+$og_url = $page_canonical ?? (SITE_URL . ($_SERVER['REQUEST_URI'] ?? ''));
+$og_image = $page_image ?? '';
+$og_type = $page_og_type ?? 'website';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo isset($page_title) ? sanitize_input($page_title) . ' — ' . SITE_NAME : SITE_NAME; ?></title>
-    <meta name="description" content="<?php echo SITE_DESCRIPTION; ?>">
+    <title><?php echo $meta_title; ?></title>
+    <meta name="description" content="<?php echo sanitize_input($meta_description); ?>">
+    <?php if (!empty($page_canonical)): ?>
+    <link rel="canonical" href="<?php echo sanitize_input($page_canonical); ?>">
+    <?php endif; ?>
+    <meta property="og:title" content="<?php echo $meta_title; ?>">
+    <meta property="og:description" content="<?php echo sanitize_input($meta_description); ?>">
+    <meta property="og:type" content="<?php echo sanitize_input($og_type); ?>">
+    <meta property="og:url" content="<?php echo sanitize_input($og_url); ?>">
+    <?php if ($og_image !== ''): ?>
+    <meta property="og:image" content="<?php echo sanitize_input($og_image); ?>">
+    <?php endif; ?>
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="theme-color" content="#000000">
+    <link rel="alternate" type="application/rss+xml" title="<?php echo sanitize_input(SITE_NAME); ?> Blog" href="<?php echo url('public/blog/rss.php'); ?>">
 
     <!-- JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,11 +64,17 @@ $is_profile = (bool) preg_match('#/auth/profile\.php#', $script);
                     <a href="<?php echo url('public/index.php'); ?>" class="<?php echo $is_home ? 'active' : ''; ?>">home</a>
                 </li>
                 <li>
+                    <a href="<?php echo url('public/blog/index.php'); ?>" class="<?php echo $is_blog ? 'active' : ''; ?>">blog</a>
+                </li>
+                <li>
                     <a href="<?php echo url('public/forum/topics.php'); ?>" class="<?php echo $is_topics ? 'active' : ''; ?>">topics</a>
                 </li>
                 <?php if (is_logged_in()): ?>
                     <li>
-                        <a href="<?php echo url('public/forum/create_topic.php'); ?>" class="accent">new topic</a>
+                        <a href="<?php echo url('public/blog/write.php'); ?>" class="accent">write</a>
+                    </li>
+                    <li>
+                        <a href="<?php echo url('public/forum/create_topic.php'); ?>">new topic</a>
                     </li>
                     <li>
                         <a href="<?php echo url('public/auth/profile.php'); ?>" class="<?php echo $is_profile ? 'active' : ''; ?>">
