@@ -62,9 +62,57 @@ function get_current_user_data() {
     }
     
     $db = getDB();
-    $stmt = $db->prepare("SELECT id, username, email, display_name, user_role FROM users WHERE id = ? AND is_active = 1");
+    $stmt = $db->prepare("SELECT id, username, email, display_name, signature, user_role, join_date FROM users WHERE id = ? AND is_active = 1");
     $stmt->execute([$_SESSION['user_id']]);
     return $stmt->fetch();
+}
+
+/**
+ * Max length for public user signatures (hacker-style footer under posts)
+ */
+function signature_max_length() {
+    return 400;
+}
+
+/**
+ * Sanitize and clamp a public signature for storage
+ */
+function clean_signature($signature) {
+    $signature = trim((string) $signature);
+    // Normalize newlines, strip nulls
+    $signature = str_replace(["\r\n", "\r"], "\n", $signature);
+    $signature = str_replace("\0", '', $signature);
+    // No HTML in sigs — pure text / ASCII
+    $signature = strip_tags($signature);
+    $max = signature_max_length();
+    if (mb_strlen($signature) > $max) {
+        $signature = mb_substr($signature, 0, $max);
+    }
+    return $signature;
+}
+
+/**
+ * Render a public signature block (HTML-safe). Empty string if none.
+ */
+function render_signature($signature, $username = '') {
+    $signature = trim((string) $signature);
+    if ($signature === '') {
+        return '';
+    }
+    $lines = preg_split('/\n/', $signature);
+    $safe_lines = [];
+    foreach ($lines as $line) {
+        $safe_lines[] = sanitize_input($line);
+    }
+    $handle = $username !== '' ? sanitize_input($username) : '';
+    $html = '<footer class="ody-sig">';
+    $html .= '<div class="ody-sig-rule">— sig —</div>';
+    if ($handle !== '') {
+        $html .= '<div class="ody-sig-handle">@' . $handle . '</div>';
+    }
+    $html .= '<pre class="ody-sig-body">' . implode("\n", $safe_lines) . '</pre>';
+    $html .= '</footer>';
+    return $html;
 }
 
 /**

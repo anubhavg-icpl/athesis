@@ -15,7 +15,7 @@ $reply_success = false;
 // Get topic details
 $db = getDB();
 $stmt = $db->prepare("
-    SELECT t.*, u.username, u.display_name, u.user_role, u.join_date
+    SELECT t.*, u.username, u.display_name, u.signature, u.user_role, u.join_date
     FROM topics t 
     JOIN users u ON t.user_id = u.id 
     WHERE t.id = ?
@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
 // Get replies with pagination
 $offset = ($page - 1) * REPLIES_PER_PAGE;
 $stmt = $db->prepare("
-    SELECT r.*, u.username, u.display_name, u.user_role, u.join_date,
+    SELECT r.*, u.username, u.display_name, u.signature, u.user_role, u.join_date,
            parent_u.display_name as parent_author
     FROM replies r 
     JOIN users u ON r.user_id = u.id 
@@ -147,6 +147,7 @@ include '../../includes/header.php';
             echo nl2br(sanitize_input($body));
         }
         ?>
+        <?php echo render_signature($topic['signature'] ?? '', $topic['username'] ?? ''); ?>
     </div>
     <div class="ody-post-foot">
         <span>member since <?php echo format_date($topic['join_date']); ?></span>
@@ -192,6 +193,7 @@ include '../../includes/header.php';
                         echo nl2br(sanitize_input($rbody));
                     }
                     ?>
+                    <?php echo render_signature($reply['signature'] ?? '', $reply['username'] ?? ''); ?>
                 </div>
                 <div class="ody-post-foot">
                     <span></span>

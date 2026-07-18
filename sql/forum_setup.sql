@@ -12,6 +12,7 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     display_name VARCHAR(100) NOT NULL,
+    signature TEXT NULL COMMENT 'Public hacker-style signature shown under posts',
     join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP NULL,
     is_active BOOLEAN DEFAULT TRUE,
@@ -78,8 +79,10 @@ CREATE TABLE user_sessions (
 );
 
 -- Insert sample admin user (password: admin123)
-INSERT INTO users (username, email, password_hash, display_name, user_role) VALUES 
-('admin', 'admin@forum.local', '$2y$10$vju93sETWrhLhpk6dy1MkOdGXP41kLLvVAPy20L6yiHgL3i8wegOC', 'Administrator', 'admin');
+INSERT INTO users (username, email, password_hash, display_name, signature, user_role) VALUES 
+('admin', 'admin@forum.local', '$2y$10$vju93sETWrhLhpk6dy1MkOdGXP41kLLvVAPy20L6yiHgL3i8wegOC', 'Administrator',
+ '0xroot · trust nothing
+verify everything · stay curious', 'admin');
 
 -- Insert sample topics and replies for testing
 INSERT INTO topics (title, content, user_id) VALUES 

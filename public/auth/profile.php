@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $display_name = trim($_POST['display_name'] ?? '');
         $email = trim($_POST['email'] ?? '');
+        $signature = clean_signature($_POST['signature'] ?? '');
         $current_password = $_POST['current_password'] ?? '';
         $new_password = $_POST['new_password'] ?? '';
         $confirm_password = $_POST['confirm_password'] ?? '';
@@ -31,6 +32,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Email is required.';
         } elseif (!validate_email($email)) {
             $errors[] = 'Please enter a valid email address.';
+        }
+
+        // Validate public signature (optional)
+        if (mb_strlen($signature) > signature_max_length()) {
+            $errors[] = 'Signature must be at most ' . signature_max_length() . ' characters.';
         }
         
         $db = getDB();
@@ -72,11 +78,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 if ($update_password) {
                     $password_hash = hash_password($new_password);
-                    $stmt = $db->prepare("UPDATE users SET display_name = ?, email = ?, password_hash = ? WHERE id = ?");
-                    $stmt->execute([$display_name, $email, $password_hash, $current_user['id']]);
+                    $stmt = $db->prepare("UPDATE users SET display_name = ?, email = ?, signature = ?, password_hash = ? WHERE id = ?");
+                    $stmt->execute([$display_name, $email, $signature !== '' ? $signature : null, $password_hash, $current_user['id']]);
                 } else {
-                    $stmt = $db->prepare("UPDATE users SET display_name = ?, email = ? WHERE id = ?");
-                    $stmt->execute([$display_name, $email, $current_user['id']]);
+                    $stmt = $db->prepare("UPDATE users SET display_name = ?, email = ?, signature = ? WHERE id = ?");
+                    $stmt->execute([$display_name, $email, $signature !== '' ? $signature : null, $current_user['id']]);
                 }
                 
                 // Update session data
@@ -92,6 +98,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+}
+
+// Refresh user after failed POST so form still has fields
+if (!empty($errors)) {
+    $current_user = get_current_user_data() ?: $current_user;
 }
 
 // Get user statistics
@@ -152,6 +163,32 @@ include '../../includes/header.php';
                     </div>
 
                     <hr>
+                    <p class="form-label mb-2" style="display:block;">public signature · hacker tag</p>
+                    <p class="form-text mb-3">shown under every topic &amp; reply you post. ascii / plain text only.</p>
+
+                    <div class="mb-3">
+                        <label for="signature" class="form-label">signature</label>
+                        <textarea class="form-control ody-sig-input" id="signature" name="signature"
+                                  rows="4" maxlength="<?php echo signature_max_length(); ?>"
+                                  placeholder="0xhandle · void&#10;trust nothing · verify everything"><?php
+                            echo sanitize_input($_POST['signature'] ?? ($current_user['signature'] ?? ''));
+                        ?></textarea>
+                        <div class="form-text">
+                            max <?php echo signature_max_length(); ?> chars · no html · multi-line ok
+                        </div>
+                    </div>
+
+                    <?php
+                    $preview_sig = clean_signature($_POST['signature'] ?? ($current_user['signature'] ?? ''));
+                    if ($preview_sig !== ''):
+                    ?>
+                        <div class="mb-4">
+                            <div class="form-label mb-2">preview</div>
+                            <?php echo render_signature($preview_sig, $current_user['username'] ?? ''); ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <hr>
                     <p class="form-label mb-3" style="display:block;">change password · optional</p>
 
                     <div class="mb-3">
@@ -195,12 +232,27 @@ include '../../includes/header.php';
             <div class="ody-panel-body small" style="color: var(--text-mute);">
                 <p class="mb-2">
                     <span style="color: var(--text-dim);">member since</span><br>
-                    <?php echo format_date($current_user['join_date']); ?>
+                    <?php echo !empty($current_user['join_date']) ? format_date($current_user['join_date']) : '—'; ?>
                 </p>
-                <p class="mb-0">
+                <p class="mb-2">
                     <span style="color: var(--text-dim);">role</span><br>
                     <?php echo strtolower(sanitize_input($current_user['user_role'])); ?>
                 </p>
+                <p class="mb-0">
+                    <span style="color: var(--text-dim);">handle</span><br>
+                    @<?php echo sanitize_input($current_user['username']); ?>
+                </p>
+            </div>
+        </div>
+
+        <div class="ody-panel">
+            <div class="ody-panel-head">sig tips</div>
+            <div class="ody-panel-body small" style="color: var(--text-dim); line-height: 1.7;">
+                <p class="mb-2">// classic underground footer</p>
+                <pre class="ody-sig-example">0xroot · /dev/null
+trust nothing
+verify everything</pre>
+                <p class="mb-0 mt-3" style="color: var(--text-mute);">shows publicly under your posts.</p>
             </div>
         </div>
     </div>
