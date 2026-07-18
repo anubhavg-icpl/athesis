@@ -47,7 +47,7 @@ include '../includes/header.php';
     <span class="label">community · forum</span>
     <h1>The <span class="accent-word">forum</span>.</h1>
     <p>Anyone can read. Members write. The knowledge stays open.</p>
-    <p style="font-size:11px;letter-spacing:1px;color:#888;margin-bottom:2rem">
+    <p style="font-size:0.9375rem;letter-spacing:0.02em;color:var(--text-dim);margin-bottom:1.75rem;line-height:1.7">
         <?php if (!is_logged_in()): ?>
             <a href="auth/login.php" style="color:#ff0033;border-bottom:1px solid rgba(255,0,51,.45)">$_ log in</a>
             to post · reading is open to all.
@@ -102,8 +102,8 @@ include '../includes/header.php';
             <?php else: ?>
                 <div class="ody-list">
                     <?php foreach ($recent_topics as $topic): ?>
-                        <div class="ody-list-item">
-                            <span class="marker">▸</span>
+                        <a class="ody-list-item" href="<?php echo url('public/forum/view_topic.php?id=' . (int) $topic['id']); ?>">
+                            <span class="marker" aria-hidden="true">▸</span>
                             <div class="body">
                                 <h3 class="title">
                                     <?php if (!empty($topic['is_pinned'])): ?>
@@ -112,9 +112,7 @@ include '../includes/header.php';
                                     <?php if (!empty($topic['is_locked'])): ?>
                                         <span class="ody-flag lock" title="locked">lock</span>
                                     <?php endif; ?>
-                                    <a href="forum/view_topic.php?id=<?php echo (int) $topic['id']; ?>">
-                                        <?php echo sanitize_input($topic['title']); ?>
-                                    </a>
+                                    <span class="title-text"><?php echo sanitize_input($topic['title']); ?></span>
                                 </h3>
                                 <p class="excerpt"><?php echo truncate_text(strip_tags($topic['content']), 110); ?></p>
                                 <div class="meta">
@@ -124,7 +122,10 @@ include '../includes/header.php';
                                     <span><?php echo (int) $topic['view_count']; ?> views</span>
                                 </div>
                             </div>
-                        </div>
+                            <div class="stats">
+                                <span class="open-hint">open →</span>
+                            </div>
+                        </a>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>

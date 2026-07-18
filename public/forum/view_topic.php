@@ -138,7 +138,15 @@ include '../../includes/header.php';
         </div>
     </div>
     <div class="ody-post-body topic-content">
-        <?php echo $topic['content']; ?>
+        <?php
+        // Render stored HTML if present; otherwise plain text with line breaks
+        $body = $topic['content'] ?? '';
+        if ($body !== strip_tags($body)) {
+            echo $body;
+        } else {
+            echo nl2br(sanitize_input($body));
+        }
+        ?>
     </div>
     <div class="ody-post-foot">
         <span>member since <?php echo format_date($topic['join_date']); ?></span>
@@ -176,7 +184,14 @@ include '../../includes/header.php';
                     </div>
                 </div>
                 <div class="ody-post-body reply-content">
-                    <?php echo $reply['content']; ?>
+                    <?php
+                    $rbody = $reply['content'] ?? '';
+                    if ($rbody !== strip_tags($rbody)) {
+                        echo $rbody;
+                    } else {
+                        echo nl2br(sanitize_input($rbody));
+                    }
+                    ?>
                 </div>
                 <div class="ody-post-foot">
                     <span></span>

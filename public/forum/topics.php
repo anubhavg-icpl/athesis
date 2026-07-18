@@ -117,8 +117,8 @@ include '../../includes/header.php';
 <?php else: ?>
     <div class="ody-list">
         <?php foreach ($topics as $topic): ?>
-            <div class="ody-list-item">
-                <span class="marker">▸</span>
+            <a class="ody-list-item" href="<?php echo url('public/forum/view_topic.php?id=' . (int) $topic['id']); ?>">
+                <span class="marker" aria-hidden="true">▸</span>
                 <div class="body">
                     <h3 class="title">
                         <?php if (!empty($topic['is_pinned'])): ?>
@@ -127,9 +127,7 @@ include '../../includes/header.php';
                         <?php if (!empty($topic['is_locked'])): ?>
                             <span class="ody-flag lock" title="locked">lock</span>
                         <?php endif; ?>
-                        <a href="view_topic.php?id=<?php echo (int) $topic['id']; ?>">
-                            <?php echo sanitize_input($topic['title']); ?>
-                        </a>
+                        <span class="title-text"><?php echo sanitize_input($topic['title']); ?></span>
                     </h3>
                     <div class="meta">
                         <span>by <strong><?php echo sanitize_input($topic['author_name']); ?></strong></span>
@@ -143,11 +141,12 @@ include '../../includes/header.php';
                         <?php endif; ?>
                     </div>
                 </div>
-                <div class="stats d-none d-md-block">
-                    <span><?php echo (int) $topic['reply_count']; ?> rpl</span>
-                    <span><?php echo (int) $topic['view_count']; ?> views</span>
+                <div class="stats">
+                    <span class="open-hint">open →</span>
+                    <span class="d-none d-md-block"><?php echo (int) $topic['reply_count']; ?> rpl</span>
+                    <span class="d-none d-md-block"><?php echo (int) $topic['view_count']; ?> views</span>
                 </div>
-            </div>
+            </a>
         <?php endforeach; ?>
     </div>
 
