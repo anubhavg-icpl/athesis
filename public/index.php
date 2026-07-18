@@ -10,7 +10,7 @@ $stmt = $db->prepare("
     FROM topics t 
     JOIN users u ON t.user_id = u.id 
     ORDER BY t.is_pinned DESC, t.created_at DESC 
-    LIMIT 5
+    LIMIT 8
 ");
 $stmt->execute();
 $recent_topics = $stmt->fetchAll();
@@ -43,189 +43,154 @@ $active_users = $stmt->fetchAll();
 include '../includes/header.php';
 ?>
 
-<!-- Hero Section -->
-<div class="jumbotron bg-primary text-white rounded p-5 mb-4">
-    <div class="container-fluid">
-        <h1 class="display-4">Welcome to <?php echo SITE_NAME; ?></h1>
-        <p class="lead"><?php echo SITE_DESCRIPTION; ?></p>
+<section class="ody-hero">
+    <span class="label">community · forum</span>
+    <h1>The <span class="accent-word">forum</span>.</h1>
+    <p>Anyone can read. Members write. The knowledge stays open.</p>
+    <p style="font-size:11px;letter-spacing:1px;color:#888;margin-bottom:2rem">
         <?php if (!is_logged_in()): ?>
-            <hr class="my-4">
-            <p>Join our community to start discussions and connect with others.</p>
-            <div class="d-flex gap-2">
-                <a class="btn btn-light btn-lg" href="auth/register.php" role="button">
-                    <i class="bi bi-person-plus"></i> Register Now
-                </a>
-                <a class="btn btn-outline-light btn-lg" href="auth/login.php" role="button">
-                    <i class="bi bi-box-arrow-in-right"></i> Login
-                </a>
-            </div>
+            <a href="auth/login.php" style="color:#ff0033;border-bottom:1px solid rgba(255,0,51,.45)">$_ log in</a>
+            to post · reading is open to all.
         <?php else: ?>
-            <hr class="my-4">
-            <p>Ready to start a new discussion?</p>
-            <a class="btn btn-light btn-lg" href="forum/create_topic.php" role="button">
-                <i class="bi bi-plus-circle"></i> Create New Topic
-            </a>
+            <a href="forum/create_topic.php" style="color:#ff0033;border-bottom:1px solid rgba(255,0,51,.45)">$_ new topic</a>
+            · sparse discussions. no noise. just signal.
         <?php endif; ?>
+    </p>
+    <div class="ody-hero-actions">
+        <?php if (!is_logged_in()): ?>
+            <a class="btn btn-primary" href="auth/register.php">join →</a>
+            <a class="ody-link-btn" href="forum/topics.php">browse topics</a>
+        <?php else: ?>
+            <a class="btn btn-primary" href="forum/create_topic.php">new topic →</a>
+            <a class="ody-link-btn" href="forum/topics.php">browse all</a>
+            <a class="ody-link-btn" href="auth/profile.php">profile</a>
+        <?php endif; ?>
+    </div>
+</section>
+
+<div class="ody-stats">
+    <div class="ody-stat">
+        <span class="num"><?php echo (int) $total_topics; ?></span>
+        <span class="lbl">topics</span>
+    </div>
+    <div class="ody-stat">
+        <span class="num"><?php echo (int) $total_replies; ?></span>
+        <span class="lbl">replies</span>
+    </div>
+    <div class="ody-stat">
+        <span class="num"><?php echo (int) $total_users; ?></span>
+        <span class="lbl">users</span>
     </div>
 </div>
 
-<div class="row">
-    <!-- Recent Topics -->
+<div class="row g-4">
     <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Topics</h5>
-                <a href="forum/topics.php" class="btn btn-outline-primary btn-sm">View All</a>
+        <section class="ody-section">
+            <div class="ody-section-head">
+                <h2>recent topics</h2>
+                <a href="forum/topics.php">view all →</a>
             </div>
-            <div class="card-body">
-                <?php if (empty($recent_topics)): ?>
-                    <div class="text-center text-muted py-4">
-                        <i class="bi bi-chat-dots display-4"></i>
-                        <p class="mt-2">No topics yet. Be the first to start a discussion!</p>
-                        <?php if (is_logged_in()): ?>
-                            <a href="forum/create_topic.php" class="btn btn-primary">Create First Topic</a>
-                        <?php endif; ?>
-                    </div>
-                <?php else: ?>
-                    <div class="list-group list-group-flush">
-                        <?php foreach ($recent_topics as $topic): ?>
-                            <div class="list-group-item border-0 px-0">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-1">
-                                            <?php if ($topic['is_pinned']): ?>
-                                                <i class="bi bi-pin text-warning" title="Pinned"></i>
-                                            <?php endif; ?>
-                                            <?php if ($topic['is_locked']): ?>
-                                                <i class="bi bi-lock text-danger" title="Locked"></i>
-                                            <?php endif; ?>
-                                            <a href="forum/view_topic.php?id=<?php echo $topic['id']; ?>" class="text-decoration-none">
-                                                <?php echo sanitize_input($topic['title']); ?>
-                                            </a>
-                                        </h6>
-                                        <p class="mb-1 text-muted small">
-                                            <?php echo truncate_text(strip_tags($topic['content']), 120); ?>
-                                        </p>
-                                        <small class="text-muted">
-                                            <i class="bi bi-person"></i> by <strong><?php echo sanitize_input($topic['author_name']); ?></strong>
-                                            <i class="bi bi-clock ms-2"></i> <?php echo time_ago($topic['created_at']); ?>
-                                            <i class="bi bi-chat ms-2"></i> <?php echo $topic['reply_count']; ?> replies
-                                            <i class="bi bi-eye ms-2"></i> <?php echo $topic['view_count']; ?> views
-                                        </small>
-                                    </div>
+
+            <?php if (empty($recent_topics)): ?>
+                <div class="ody-empty">
+                    <div class="icon">//</div>
+                    <p>no topics yet. be the first to start a discussion.</p>
+                    <?php if (is_logged_in()): ?>
+                        <a href="forum/create_topic.php" class="btn btn-primary btn-sm mt-2">create first topic</a>
+                    <?php endif; ?>
+                </div>
+            <?php else: ?>
+                <div class="ody-list">
+                    <?php foreach ($recent_topics as $topic): ?>
+                        <div class="ody-list-item">
+                            <span class="marker">▸</span>
+                            <div class="body">
+                                <h3 class="title">
+                                    <?php if (!empty($topic['is_pinned'])): ?>
+                                        <span class="ody-flag" title="pinned">pin</span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($topic['is_locked'])): ?>
+                                        <span class="ody-flag lock" title="locked">lock</span>
+                                    <?php endif; ?>
+                                    <a href="forum/view_topic.php?id=<?php echo (int) $topic['id']; ?>">
+                                        <?php echo sanitize_input($topic['title']); ?>
+                                    </a>
+                                </h3>
+                                <p class="excerpt"><?php echo truncate_text(strip_tags($topic['content']), 110); ?></p>
+                                <div class="meta">
+                                    <span>by <strong><?php echo sanitize_input($topic['author_name']); ?></strong></span>
+                                    <span><?php echo time_ago($topic['created_at']); ?></span>
+                                    <span><?php echo (int) $topic['reply_count']; ?> replies</span>
+                                    <span><?php echo (int) $topic['view_count']; ?> views</span>
                                 </div>
                             </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </section>
     </div>
-    
-    <!-- Sidebar -->
-    <div class="col-lg-4">
-        <!-- Forum Statistics -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h6 class="mb-0"><i class="bi bi-bar-chart"></i> Forum Statistics</h6>
+
+    <div class="col-lg-4 ody-sidebar">
+        <section class="ody-section">
+            <div class="ody-section-head">
+                <h2>active users</h2>
             </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-4">
-                        <h4 class="text-primary"><?php echo $total_topics; ?></h4>
-                        <small class="text-muted">Topics</small>
-                    </div>
-                    <div class="col-4">
-                        <h4 class="text-success"><?php echo $total_replies; ?></h4>
-                        <small class="text-muted">Replies</small>
-                    </div>
-                    <div class="col-4">
-                        <h4 class="text-info"><?php echo $total_users; ?></h4>
-                        <small class="text-muted">Users</small>
-                    </div>
+            <?php if (empty($active_users)): ?>
+                <div class="ody-empty">
+                    <p>no active users yet.</p>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Most Active Users -->
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0"><i class="bi bi-people"></i> Most Active Users</h6>
-            </div>
-            <div class="card-body">
-                <?php if (empty($active_users)): ?>
-                    <p class="text-muted small">No active users yet.</p>
-                <?php else: ?>
-                    <div class="list-group list-group-flush">
-                        <?php foreach ($active_users as $user): ?>
-                            <div class="list-group-item border-0 px-0 py-2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong><?php echo sanitize_input($user['display_name']); ?></strong>
-                                        <span class="badge bg-secondary ms-1"><?php echo ucfirst($user['user_role']); ?></span>
-                                    </div>
-                                    <small class="text-muted">
-                                        <?php echo $user['topic_count'] + $user['reply_count']; ?> posts
-                                    </small>
+            <?php else: ?>
+                <div class="ody-list">
+                    <?php foreach ($active_users as $user): ?>
+                        <div class="ody-list-item">
+                            <span class="marker">·</span>
+                            <div class="body">
+                                <h3 class="title"><?php echo sanitize_input($user['display_name']); ?></h3>
+                                <div class="meta">
+                                    <span><?php echo strtolower(sanitize_input($user['user_role'])); ?></span>
+                                    <span><?php echo (int) ($user['topic_count'] + $user['reply_count']); ?> posts</span>
                                 </div>
                             </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
-        
-        <!-- Quick Actions -->
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </section>
+
         <?php if (is_logged_in()): ?>
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h6>
+            <section class="ody-section">
+                <div class="ody-section-head">
+                    <h2>quick actions</h2>
                 </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="forum/create_topic.php" class="btn btn-primary btn-sm">
-                            <i class="bi bi-plus-circle"></i> Create New Topic
-                        </a>
-                        <a href="forum/topics.php" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-list-ul"></i> Browse All Topics
-                        </a>
-                        <a href="auth/profile.php" class="btn btn-outline-secondary btn-sm">
-                            <i class="bi bi-person"></i> Edit Profile
-                        </a>
+                <div class="ody-panel">
+                    <div class="ody-panel-body d-grid gap-2">
+                        <a href="forum/create_topic.php" class="btn btn-primary btn-sm">new topic</a>
+                        <a href="forum/topics.php" class="btn btn-outline-secondary btn-sm">browse topics</a>
+                        <a href="auth/profile.php" class="btn btn-outline-secondary btn-sm">edit profile</a>
                     </div>
                 </div>
-            </div>
+            </section>
         <?php endif; ?>
     </div>
 </div>
 
-<!-- Features Section -->
-<div class="row mt-5">
-    <div class="col-12">
-        <h3 class="text-center mb-4">Forum Features</h3>
+<div class="ody-features">
+    <div class="ody-feature">
+        <div class="tag">01</div>
+        <h5>threaded discussion</h5>
+        <p>organized conversations with replies that stay readable and sparse.</p>
     </div>
-    <div class="col-md-4">
-        <div class="text-center">
-            <i class="bi bi-chat-dots display-4 text-primary"></i>
-            <h5 class="mt-3">Threaded Discussions</h5>
-            <p class="text-muted">Engage in organized conversations with threaded replies and easy-to-follow discussions.</p>
-        </div>
+    <div class="ody-feature">
+        <div class="tag">02</div>
+        <h5>search &amp; sort</h5>
+        <p>find topics fast. filter by activity, replies, or views.</p>
     </div>
-    <div class="col-md-4">
-        <div class="text-center">
-            <i class="bi bi-search display-4 text-success"></i>
-            <h5 class="mt-3">Powerful Search</h5>
-            <p class="text-muted">Find topics and discussions quickly with our built-in search and filtering capabilities.</p>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="text-center">
-            <i class="bi bi-shield-check display-4 text-info"></i>
-            <h5 class="mt-3">Secure & Safe</h5>
-            <p class="text-muted">Your data is protected with secure authentication and input validation.</p>
-        </div>
+    <div class="ody-feature">
+        <div class="tag">03</div>
+        <h5>secure by default</h5>
+        <p>auth, csrf, and validation keep the board clean and safe.</p>
     </div>
 </div>
 
 <?php include '../includes/footer.php'; ?>
-

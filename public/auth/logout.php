@@ -12,24 +12,24 @@ if (!isset($_GET['token']) || !verify_csrf_token($_GET['token'])) {
         $page_title = 'Logout';
         include '../../includes/header.php';
         ?>
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h4 class="mb-0"><i class="bi bi-box-arrow-right"></i> Logout</h4>
-                    </div>
-                    <div class="card-body">
-                        <p>Are you sure you want to logout?</p>
-                        <form method="POST" action="">
-                            <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
-                            <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="bi bi-box-arrow-right"></i> Yes, Logout
-                                </button>
-                                <a href="../index.php" class="btn btn-secondary">Cancel</a>
-                            </div>
-                        </form>
-                    </div>
+        <div class="ody-auth">
+            <div class="ody-page-head">
+                <h1><span class="prompt">$_</span>logout</h1>
+            </div>
+
+            <div class="ody-panel">
+                <div class="ody-panel-head">confirm</div>
+                <div class="ody-panel-body">
+                    <p style="color: var(--text-dim); margin-bottom: 1.25rem;">
+                        end this session?
+                    </p>
+                    <form method="POST" action="">
+                        <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
+                        <div class="d-flex gap-3 align-items-center">
+                            <button type="submit" class="btn btn-primary">yes, logout</button>
+                            <a href="../index.php" class="ody-link-btn">cancel</a>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

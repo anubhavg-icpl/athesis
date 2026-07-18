@@ -53,13 +53,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include '../../includes/header.php';
 ?>
 
-<div class="row">
+<div class="ody-page-head">
+    <h1><span class="prompt">$_</span>new topic</h1>
+    <a href="topics.php" class="ody-link-btn">← topics</a>
+</div>
+
+<div class="row g-4">
     <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="mb-0"><i class="bi bi-plus-circle"></i> Create New Topic</h4>
-            </div>
-            <div class="card-body">
+        <div class="ody-panel">
+            <div class="ody-panel-head">compose</div>
+            <div class="ody-panel-body">
                 <?php if (!empty($errors)): ?>
                     <div class="alert alert-danger">
                         <ul class="mb-0">
@@ -69,82 +72,69 @@ include '../../includes/header.php';
                         </ul>
                     </div>
                 <?php endif; ?>
-                
+
                 <form method="POST" action="">
                     <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
-                    
+
                     <div class="mb-3">
-                        <label for="title" class="form-label">Topic Title</label>
-                        <input type="text" class="form-control" id="title" name="title" 
-                               value="<?php echo sanitize_input($_POST['title'] ?? ''); ?>" 
+                        <label for="title" class="form-label">title</label>
+                        <input type="text" class="form-control" id="title" name="title"
+                               value="<?php echo sanitize_input($_POST['title'] ?? ''); ?>"
                                required maxlength="255" minlength="5"
-                               placeholder="Enter a descriptive title for your topic">
-                        <div class="form-text">5-255 characters. Be clear and descriptive.</div>
+                               placeholder="clear, descriptive title">
+                        <div class="form-text">5–255 characters</div>
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label for="content" class="form-label">Content</label>
-                        <textarea class="form-control" id="content" name="content" rows="8" 
+                        <label for="content" class="form-label">content</label>
+                        <textarea class="form-control" id="content" name="content" rows="10"
                                   required minlength="10"
-                                  placeholder="Write your topic content here. You can use basic HTML formatting."><?php echo sanitize_input($_POST['content'] ?? ''); ?></textarea>
+                                  placeholder="write your topic..."><?php echo sanitize_input($_POST['content'] ?? ''); ?></textarea>
                         <div class="form-text">
-                            Minimum 10 characters. Basic HTML tags are allowed: &lt;p&gt;, &lt;br&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;u&gt;, &lt;ol&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;blockquote&gt;
+                            min 10 chars · allowed: p, br, strong, em, u, ol, ul, li, blockquote
                         </div>
                     </div>
-                    
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-plus-circle"></i> Create Topic
-                        </button>
-                        <a href="topics.php" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Cancel
-                        </a>
+
+                    <div class="d-flex gap-3 align-items-center">
+                        <button type="submit" class="btn btn-primary">create topic</button>
+                        <a href="topics.php" class="ody-link-btn">cancel</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Posting Guidelines</h6>
-            </div>
-            <div class="card-body">
-                <ul class="small mb-0">
-                    <li>Choose a clear, descriptive title</li>
-                    <li>Provide enough detail in your content</li>
-                    <li>Be respectful and constructive</li>
-                    <li>Search existing topics before posting</li>
-                    <li>Use proper formatting for readability</li>
+
+    <div class="col-md-4 ody-sidebar">
+        <div class="ody-panel">
+            <div class="ody-panel-head">guidelines</div>
+            <div class="ody-panel-body">
+                <ul class="small mb-0" style="padding-left: 1.1rem; color: var(--text-dim);">
+                    <li class="mb-2">clear, descriptive title</li>
+                    <li class="mb-2">enough detail in the body</li>
+                    <li class="mb-2">be respectful</li>
+                    <li class="mb-2">search before posting</li>
+                    <li>format for readability</li>
                 </ul>
             </div>
         </div>
-        
-        <div class="card mt-3">
-            <div class="card-header">
-                <h6 class="mb-0"><i class="bi bi-code"></i> Formatting Help</h6>
-            </div>
-            <div class="card-body">
-                <div class="small">
-                    <p><strong>Bold text:</strong> &lt;strong&gt;text&lt;/strong&gt;</p>
-                    <p><strong>Italic text:</strong> &lt;em&gt;text&lt;/em&gt;</p>
-                    <p><strong>Line break:</strong> &lt;br&gt;</p>
-                    <p><strong>Paragraph:</strong> &lt;p&gt;text&lt;/p&gt;</p>
-                    <p><strong>Quote:</strong> &lt;blockquote&gt;text&lt;/blockquote&gt;</p>
-                </div>
+
+        <div class="ody-panel">
+            <div class="ody-panel-head">formatting</div>
+            <div class="ody-panel-body small" style="color: var(--text-mute);">
+                <p class="mb-2"><span style="color: var(--text-dim);">bold</span> &lt;strong&gt;</p>
+                <p class="mb-2"><span style="color: var(--text-dim);">italic</span> &lt;em&gt;</p>
+                <p class="mb-2"><span style="color: var(--text-dim);">break</span> &lt;br&gt;</p>
+                <p class="mb-0"><span style="color: var(--text-dim);">quote</span> &lt;blockquote&gt;</p>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// Auto-resize textarea
-document.getElementById('content').addEventListener('input', function() {
+document.getElementById('content').addEventListener('input', function () {
     this.style.height = 'auto';
     this.style.height = this.scrollHeight + 'px';
 });
 </script>
 
 <?php include '../../includes/footer.php'; ?>
-

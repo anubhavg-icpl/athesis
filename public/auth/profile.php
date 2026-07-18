@@ -33,9 +33,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Please enter a valid email address.';
         }
         
+        $db = getDB();
+
         // Check if email is already taken by another user
         if (empty($errors) && $email !== $current_user['email']) {
-            $db = getDB();
             $stmt = $db->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
             $stmt->execute([$email, $current_user['id']]);
             if ($stmt->fetch()) {
@@ -54,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$current_user['id']]);
                 $user_data = $stmt->fetch();
                 
-                if (!verify_password($current_password, $user_data['password_hash'])) {
+                if (!$user_data || !verify_password($current_password, $user_data['password_hash'])) {
                     $errors[] = 'Current password is incorrect.';
                 } elseif (!validate_password($new_password)) {
                     $errors[] = 'New password must be at least 6 characters long.';
@@ -106,13 +107,15 @@ $reply_count = $stmt->fetchColumn();
 include '../../includes/header.php';
 ?>
 
-<div class="row">
+<div class="ody-page-head">
+    <h1><span class="prompt">$_</span>profile</h1>
+</div>
+
+<div class="row g-4">
     <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="mb-0"><i class="bi bi-person"></i> Edit Profile</h4>
-            </div>
-            <div class="card-body">
+        <div class="ody-panel">
+            <div class="ody-panel-head">edit profile</div>
+            <div class="ody-panel-body">
                 <?php if (!empty($errors)): ?>
                     <div class="alert alert-danger">
                         <ul class="mb-0">
@@ -122,83 +125,81 @@ include '../../includes/header.php';
                         </ul>
                     </div>
                 <?php endif; ?>
-                
+
                 <form method="POST" action="">
                     <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
-                    
+
                     <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" 
-                               value="<?php echo sanitize_input($current_user['username']); ?>" 
+                        <label for="username" class="form-label">username</label>
+                        <input type="text" class="form-control" id="username"
+                               value="<?php echo sanitize_input($current_user['username']); ?>"
                                disabled>
-                        <div class="form-text">Username cannot be changed.</div>
+                        <div class="form-text">cannot be changed</div>
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label for="display_name" class="form-label">Display Name</label>
-                        <input type="text" class="form-control" id="display_name" name="display_name" 
-                               value="<?php echo sanitize_input($_POST['display_name'] ?? $current_user['display_name']); ?>" 
+                        <label for="display_name" class="form-label">display name</label>
+                        <input type="text" class="form-control" id="display_name" name="display_name"
+                               value="<?php echo sanitize_input($_POST['display_name'] ?? $current_user['display_name']); ?>"
                                required maxlength="50">
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" 
-                               value="<?php echo sanitize_input($_POST['email'] ?? $current_user['email']); ?>" 
+                        <label for="email" class="form-label">email</label>
+                        <input type="email" class="form-control" id="email" name="email"
+                               value="<?php echo sanitize_input($_POST['email'] ?? $current_user['email']); ?>"
                                required maxlength="100">
                     </div>
-                    
+
                     <hr>
-                    <h6>Change Password (optional)</h6>
-                    
+                    <p class="form-label mb-3" style="display:block;">change password · optional</p>
+
                     <div class="mb-3">
-                        <label for="current_password" class="form-label">Current Password</label>
-                        <input type="password" class="form-control" id="current_password" name="current_password">
-                        <div class="form-text">Required only if changing password.</div>
+                        <label for="current_password" class="form-label">current password</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password"
+                               autocomplete="current-password">
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label for="new_password" class="form-label">New Password</label>
-                        <input type="password" class="form-control" id="new_password" name="new_password" minlength="6">
+                        <label for="new_password" class="form-label">new password</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password"
+                               minlength="6" autocomplete="new-password">
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="confirm_password" class="form-label">Confirm New Password</label>
-                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6">
+
+                    <div class="mb-4">
+                        <label for="confirm_password" class="form-label">confirm new password</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password"
+                               minlength="6" autocomplete="new-password">
                     </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Update Profile
-                        </button>
-                    </div>
+
+                    <button type="submit" class="btn btn-primary">update profile</button>
                 </form>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Statistics</h5>
+
+    <div class="col-md-4 ody-sidebar">
+        <div class="ody-stats" style="grid-template-columns: 1fr 1fr;">
+            <div class="ody-stat">
+                <span class="num"><?php echo (int) $topic_count; ?></span>
+                <span class="lbl">topics</span>
             </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-6">
-                        <h4 class="text-primary"><?php echo $topic_count; ?></h4>
-                        <small class="text-muted">Topics Created</small>
-                    </div>
-                    <div class="col-6">
-                        <h4 class="text-success"><?php echo $reply_count; ?></h4>
-                        <small class="text-muted">Replies Posted</small>
-                    </div>
-                </div>
-                <hr>
-                <p class="small text-muted mb-1">
-                    <strong>Member since:</strong> <?php echo format_date($current_user['join_date']); ?>
+            <div class="ody-stat">
+                <span class="num"><?php echo (int) $reply_count; ?></span>
+                <span class="lbl">replies</span>
+            </div>
+        </div>
+
+        <div class="ody-panel">
+            <div class="ody-panel-head">account</div>
+            <div class="ody-panel-body small" style="color: var(--text-mute);">
+                <p class="mb-2">
+                    <span style="color: var(--text-dim);">member since</span><br>
+                    <?php echo format_date($current_user['join_date']); ?>
                 </p>
-                <p class="small text-muted mb-0">
-                    <strong>Role:</strong> <?php echo ucfirst($current_user['user_role']); ?>
+                <p class="mb-0">
+                    <span style="color: var(--text-dim);">role</span><br>
+                    <?php echo strtolower(sanitize_input($current_user['user_role'])); ?>
                 </p>
             </div>
         </div>
@@ -206,4 +207,3 @@ include '../../includes/header.php';
 </div>
 
 <?php include '../../includes/footer.php'; ?>
-

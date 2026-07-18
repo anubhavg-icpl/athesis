@@ -1,8 +1,8 @@
 -- PHP Forum System Database Setup
 -- This file creates the necessary tables for the forum system
 
--- Create database (uncomment if needed)
-CREATE DATABASE php_forum CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- Create database (IF NOT EXISTS: works for manual import AND Docker entrypoint init)
+CREATE DATABASE IF NOT EXISTS php_forum CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE php_forum;
 
 -- Users table for authentication and user management

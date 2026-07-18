@@ -84,77 +84,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include '../../includes/header.php';
 ?>
 
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="mb-0"><i class="bi bi-person-plus"></i> Register</h4>
-            </div>
-            <div class="card-body">
-                <?php if (!empty($errors)): ?>
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            <?php foreach ($errors as $error): ?>
-                                <li><?php echo sanitize_input($error); ?></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
-                <?php endif; ?>
-                
-                <form method="POST" action="">
-                    <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
-                    
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" 
-                               value="<?php echo sanitize_input($_POST['username'] ?? ''); ?>" 
-                               required maxlength="20" pattern="[a-zA-Z0-9_]{3,20}">
-                        <div class="form-text">3-20 characters, letters, numbers, and underscores only.</div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" 
-                               value="<?php echo sanitize_input($_POST['email'] ?? ''); ?>" 
-                               required maxlength="100">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="display_name" class="form-label">Display Name</label>
-                        <input type="text" class="form-control" id="display_name" name="display_name" 
-                               value="<?php echo sanitize_input($_POST['display_name'] ?? ''); ?>" 
-                               required maxlength="50">
-                        <div class="form-text">This is how your name will appear to other users.</div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" 
-                               required minlength="6">
-                        <div class="form-text">At least 6 characters.</div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="confirm_password" class="form-label">Confirm Password</label>
-                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
-                               required minlength="6">
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-person-plus"></i> Register
-                        </button>
-                    </div>
-                </form>
-                
-                <hr>
-                <div class="text-center">
-                    <p class="mb-0">Already have an account? <a href="login.php">Login here</a></p>
-                </div>
-            </div>
+<div class="ody-auth">
+    <section class="ody-hero" style="border:0;margin-bottom:0;padding-bottom:0">
+        <span class="label">forum · join</span>
+        <h1>Start the <span class="accent-word">journey</span>.</h1>
+        <p>create an account to post and reply.</p>
+    </section>
+
+    <?php if (!empty($errors)): ?>
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                <?php foreach ($errors as $error): ?>
+                    <li><?php echo sanitize_input($error); ?></li>
+                <?php endforeach; ?>
+            </ul>
         </div>
-    </div>
+    <?php endif; ?>
+
+    <form method="POST" action="">
+        <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
+
+        <div class="mb-3">
+            <label for="username" class="form-label">username</label>
+            <input type="text" class="form-control" id="username" name="username"
+                   value="<?php echo sanitize_input($_POST['username'] ?? ''); ?>"
+                   required maxlength="20" pattern="[a-zA-Z0-9_]{3,20}"
+                   autocomplete="username">
+            <div class="form-text">3–20 chars · letters, numbers, _</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">email</label>
+            <input type="email" class="form-control" id="email" name="email"
+                   value="<?php echo sanitize_input($_POST['email'] ?? ''); ?>"
+                   required maxlength="100" autocomplete="email">
+        </div>
+
+        <div class="mb-3">
+            <label for="display_name" class="form-label">display name</label>
+            <input type="text" class="form-control" id="display_name" name="display_name"
+                   value="<?php echo sanitize_input($_POST['display_name'] ?? ''); ?>"
+                   required maxlength="50" autocomplete="nickname">
+            <div class="form-text">shown on posts</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-label">password</label>
+            <input type="password" class="form-control" id="password" name="password"
+                   required minlength="6" autocomplete="new-password">
+            <div class="form-text">min 6 characters</div>
+        </div>
+
+        <div class="mb-4">
+            <label for="confirm_password" class="form-label">confirm password</label>
+            <input type="password" class="form-control" id="confirm_password" name="confirm_password"
+                   required minlength="6" autocomplete="new-password">
+        </div>
+
+        <button type="submit" class="btn btn-primary">$_ register →</button>
+    </form>
+
+    <p class="mt-4 mb-0 small" style="color: var(--text-dim); letter-spacing: 1px;">
+        already here? <a href="login.php" style="color:#ff0033;border-bottom:1px solid rgba(255,0,51,.45)">login →</a>
+    </p>
 </div>
 
 <?php include '../../includes/footer.php'; ?>
-

@@ -58,205 +58,160 @@ $topics = $stmt->fetchAll();
 include '../../includes/header.php';
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="bi bi-list-ul"></i> Forum Topics</h1>
+<div class="ody-page-head">
+    <h1><span class="prompt">$_</span>topics</h1>
     <?php if (is_logged_in()): ?>
-        <a href="create_topic.php" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> New Topic
-        </a>
+        <a href="create_topic.php" class="btn btn-primary btn-sm">new topic</a>
     <?php endif; ?>
 </div>
 
-<!-- Search and Filter -->
-<div class="card mb-4">
-    <div class="card-body">
+<div class="ody-panel mb-4">
+    <div class="ody-panel-body">
         <form method="GET" action="" class="row g-3">
             <div class="col-md-6">
-                <label for="search" class="form-label">Search Topics</label>
-                <input type="text" class="form-control" id="search" name="search" 
-                       value="<?php echo sanitize_input($search); ?>" 
-                       placeholder="Search by title or content...">
+                <label for="search" class="form-label">search</label>
+                <input type="text" class="form-control" id="search" name="search"
+                       value="<?php echo sanitize_input($search); ?>"
+                       placeholder="title or content...">
             </div>
             <div class="col-md-4">
-                <label for="sort" class="form-label">Sort By</label>
+                <label for="sort" class="form-label">sort</label>
                 <select class="form-select" id="sort" name="sort">
-                    <option value="latest" <?php echo $sort === 'latest' ? 'selected' : ''; ?>>Latest Activity</option>
-                    <option value="oldest" <?php echo $sort === 'oldest' ? 'selected' : ''; ?>>Oldest First</option>
-                    <option value="replies" <?php echo $sort === 'replies' ? 'selected' : ''; ?>>Most Replies</option>
-                    <option value="views" <?php echo $sort === 'views' ? 'selected' : ''; ?>>Most Views</option>
+                    <option value="latest" <?php echo $sort === 'latest' ? 'selected' : ''; ?>>latest activity</option>
+                    <option value="oldest" <?php echo $sort === 'oldest' ? 'selected' : ''; ?>>oldest first</option>
+                    <option value="replies" <?php echo $sort === 'replies' ? 'selected' : ''; ?>>most replies</option>
+                    <option value="views" <?php echo $sort === 'views' ? 'selected' : ''; ?>>most views</option>
                 </select>
             </div>
             <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-outline-primary w-100">
-                    <i class="bi bi-search"></i> Search
-                </button>
+                <button type="submit" class="btn btn-outline-primary w-100">search</button>
             </div>
         </form>
-        
+
         <?php if (!empty($search)): ?>
-            <div class="mt-2">
+            <div class="mt-3">
                 <small class="text-muted">
-                    Showing results for: <strong><?php echo sanitize_input($search); ?></strong>
-                    <a href="topics.php" class="ms-2">Clear search</a>
+                    results for: <strong style="color: var(--text-dim);"><?php echo sanitize_input($search); ?></strong>
+                    · <a href="topics.php">clear</a>
                 </small>
             </div>
         <?php endif; ?>
     </div>
 </div>
 
-<!-- Topics List -->
 <?php if (empty($topics)): ?>
-    <div class="alert alert-info">
-        <i class="bi bi-info-circle"></i> 
+    <div class="ody-empty">
+        <div class="icon">//</div>
         <?php if (!empty($search)): ?>
-            No topics found matching your search criteria.
+            <p>no topics match your search.</p>
         <?php else: ?>
-            No topics have been created yet. 
+            <p>no topics yet.
             <?php if (is_logged_in()): ?>
-                <a href="create_topic.php">Create the first topic!</a>
+                <a href="create_topic.php">create the first one</a>
             <?php else: ?>
-                <a href="auth/login.php">Login</a> to create the first topic!
+                <a href="../auth/login.php">login</a> to start
             <?php endif; ?>
+            </p>
         <?php endif; ?>
     </div>
 <?php else: ?>
-    <div class="card">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Topic</th>
-                        <th class="text-center d-none d-md-table-cell">Replies</th>
-                        <th class="text-center d-none d-md-table-cell">Views</th>
-                        <th class="text-center">Last Activity</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($topics as $topic): ?>
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-start">
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-1">
-                                            <?php if ($topic['is_pinned']): ?>
-                                                <i class="bi bi-pin text-warning" title="Pinned"></i>
-                                            <?php endif; ?>
-                                            <?php if ($topic['is_locked']): ?>
-                                                <i class="bi bi-lock text-danger" title="Locked"></i>
-                                            <?php endif; ?>
-                                            <a href="view_topic.php?id=<?php echo $topic['id']; ?>" class="text-decoration-none">
-                                                <?php echo sanitize_input($topic['title']); ?>
-                                            </a>
-                                        </h6>
-                                        <small class="text-muted">
-                                            <i class="bi bi-person"></i> by <strong><?php echo sanitize_input($topic['author_name']); ?></strong>
-                                            <i class="bi bi-clock ms-2"></i> <?php echo time_ago($topic['created_at']); ?>
-                                        </small>
-                                        <div class="d-md-none mt-1">
-                                            <small class="text-muted">
-                                                <i class="bi bi-chat"></i> <?php echo $topic['reply_count']; ?> replies
-                                                <i class="bi bi-eye ms-2"></i> <?php echo $topic['view_count']; ?> views
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="text-center d-none d-md-table-cell">
-                                <span class="badge bg-primary"><?php echo $topic['reply_count']; ?></span>
-                            </td>
-                            <td class="text-center d-none d-md-table-cell">
-                                <span class="badge bg-secondary"><?php echo $topic['view_count']; ?></span>
-                            </td>
-                            <td class="text-center">
-                                <?php if ($topic['last_reply_at']): ?>
-                                    <small class="text-muted">
-                                        <?php echo time_ago($topic['last_reply_at']); ?><br>
-                                        by <strong><?php echo sanitize_input($topic['last_reply_author']); ?></strong>
-                                    </small>
-                                <?php else: ?>
-                                    <small class="text-muted">No replies</small>
+    <div class="ody-list">
+        <?php foreach ($topics as $topic): ?>
+            <div class="ody-list-item">
+                <span class="marker">▸</span>
+                <div class="body">
+                    <h3 class="title">
+                        <?php if (!empty($topic['is_pinned'])): ?>
+                            <span class="ody-flag" title="pinned">pin</span>
+                        <?php endif; ?>
+                        <?php if (!empty($topic['is_locked'])): ?>
+                            <span class="ody-flag lock" title="locked">lock</span>
+                        <?php endif; ?>
+                        <a href="view_topic.php?id=<?php echo (int) $topic['id']; ?>">
+                            <?php echo sanitize_input($topic['title']); ?>
+                        </a>
+                    </h3>
+                    <div class="meta">
+                        <span>by <strong><?php echo sanitize_input($topic['author_name']); ?></strong></span>
+                        <span><?php echo time_ago($topic['created_at']); ?></span>
+                        <?php if (!empty($topic['last_reply_at'])): ?>
+                            <span>last: <?php echo time_ago($topic['last_reply_at']); ?>
+                                <?php if (!empty($topic['last_reply_author'])): ?>
+                                    by <?php echo sanitize_input($topic['last_reply_author']); ?>
                                 <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div class="stats d-none d-md-block">
+                    <span><?php echo (int) $topic['reply_count']; ?> rpl</span>
+                    <span><?php echo (int) $topic['view_count']; ?> views</span>
+                </div>
+            </div>
+        <?php endforeach; ?>
     </div>
-    
-    <!-- Pagination -->
+
     <?php if ($pagination['total_pages'] > 1): ?>
         <nav aria-label="Topics pagination" class="mt-4">
             <ul class="pagination justify-content-center">
                 <?php if ($pagination['has_prev']): ?>
                     <li class="page-item">
-                        <a class="page-link" href="?page=<?php echo $pagination['current_page'] - 1; ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo $sort; ?>">Previous</a>
+                        <a class="page-link" href="?page=<?php echo $pagination['current_page'] - 1; ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo sanitize_input($sort); ?>">prev</a>
                     </li>
                 <?php endif; ?>
-                
+
                 <?php for ($i = max(1, $pagination['current_page'] - 2); $i <= min($pagination['total_pages'], $pagination['current_page'] + 2); $i++): ?>
                     <li class="page-item <?php echo $i == $pagination['current_page'] ? 'active' : ''; ?>">
-                        <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo $sort; ?>"><?php echo $i; ?></a>
+                        <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo sanitize_input($sort); ?>"><?php echo $i; ?></a>
                     </li>
                 <?php endfor; ?>
-                
+
                 <?php if ($pagination['has_next']): ?>
                     <li class="page-item">
-                        <a class="page-link" href="?page=<?php echo $pagination['current_page'] + 1; ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo $sort; ?>">Next</a>
+                        <a class="page-link" href="?page=<?php echo $pagination['current_page'] + 1; ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo sanitize_input($sort); ?>">next</a>
                     </li>
                 <?php endif; ?>
             </ul>
         </nav>
-        
-        <div class="text-center text-muted small">
-            Showing <?php echo $pagination['offset'] + 1; ?>-<?php echo min($pagination['offset'] + TOPICS_PER_PAGE, $total_topics); ?> 
-            of <?php echo $total_topics; ?> topics
+
+        <div class="text-center text-muted small mt-2">
+            showing <?php echo $pagination['offset'] + 1; ?>–<?php echo min($pagination['offset'] + TOPICS_PER_PAGE, $total_topics); ?>
+            of <?php echo (int) $total_topics; ?>
         </div>
     <?php endif; ?>
 <?php endif; ?>
 
-<!-- Forum Statistics -->
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-body">
-                <h6 class="card-title"><i class="bi bi-bar-chart"></i> Forum Statistics</h6>
-                <div class="row text-center">
-                    <?php
-                    // Get forum statistics
-                    $stmt = $db->query("SELECT COUNT(*) FROM topics");
-                    $total_topics_count = $stmt->fetchColumn();
-                    
-                    $stmt = $db->query("SELECT COUNT(*) FROM replies WHERE is_deleted = 0");
-                    $total_replies_count = $stmt->fetchColumn();
-                    
-                    $stmt = $db->query("SELECT COUNT(*) FROM users WHERE is_active = 1");
-                    $total_users_count = $stmt->fetchColumn();
-                    
-                    $stmt = $db->query("SELECT display_name FROM users WHERE is_active = 1 ORDER BY join_date DESC LIMIT 1");
-                    $newest_user = $stmt->fetchColumn();
-                    ?>
-                    <div class="col-6 col-md-3">
-                        <h5 class="text-primary"><?php echo $total_topics_count; ?></h5>
-                        <small class="text-muted">Total Topics</small>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <h5 class="text-success"><?php echo $total_replies_count; ?></h5>
-                        <small class="text-muted">Total Replies</small>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <h5 class="text-info"><?php echo $total_users_count; ?></h5>
-                        <small class="text-muted">Total Users</small>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <h6 class="text-warning"><?php echo sanitize_input($newest_user ?: 'None'); ?></h6>
-                        <small class="text-muted">Newest User</small>
-                    </div>
-                </div>
-            </div>
-        </div>
+<?php
+$stmt = $db->query("SELECT COUNT(*) FROM topics");
+$total_topics_count = $stmt->fetchColumn();
+
+$stmt = $db->query("SELECT COUNT(*) FROM replies WHERE is_deleted = 0");
+$total_replies_count = $stmt->fetchColumn();
+
+$stmt = $db->query("SELECT COUNT(*) FROM users WHERE is_active = 1");
+$total_users_count = $stmt->fetchColumn();
+
+$stmt = $db->query("SELECT display_name FROM users WHERE is_active = 1 ORDER BY join_date DESC LIMIT 1");
+$newest_user = $stmt->fetchColumn();
+?>
+
+<div class="ody-stats cols-4 mt-4">
+    <div class="ody-stat">
+        <span class="num"><?php echo (int) $total_topics_count; ?></span>
+        <span class="lbl">topics</span>
+    </div>
+    <div class="ody-stat">
+        <span class="num"><?php echo (int) $total_replies_count; ?></span>
+        <span class="lbl">replies</span>
+    </div>
+    <div class="ody-stat">
+        <span class="num"><?php echo (int) $total_users_count; ?></span>
+        <span class="lbl">users</span>
+    </div>
+    <div class="ody-stat">
+        <span class="num" style="font-size: 0.85rem;"><?php echo sanitize_input($newest_user ?: '—'); ?></span>
+        <span class="lbl">newest</span>
     </div>
 </div>
 
 <?php include '../../includes/footer.php'; ?>
-

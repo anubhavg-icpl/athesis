@@ -222,5 +222,3 @@ function full_url($path = '') {
     $path = ltrim($path, '/');
     return rtrim($base_url, '/') . '/' . $path;
 }
-?>
-

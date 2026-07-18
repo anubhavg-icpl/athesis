@@ -4,11 +4,11 @@
  * Configure your database connection settings here
  */
 
-// Database configuration
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'php_forum');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+// Database configuration (env-overridable for Docker; defaults for local dev)
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_NAME', getenv('DB_NAME') ?: 'php_forum');
+define('DB_USER', getenv('DB_USER') ?: 'root');
+define('DB_PASS', getenv('DB_PASS') ?: '');
 define('DB_CHARSET', 'utf8mb4');
 
 // PDO options for secure database connection
@@ -32,5 +32,4 @@ function getDB() {
     global $pdo;
     return $pdo;
 }
-?>
 

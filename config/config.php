@@ -45,7 +45,7 @@ if (!empty($document_root) && strpos($project_root, $document_root) === 0) {
 define('SITE_NAME', 'PHP Forum');
 define('SITE_URL', $protocol . '://' . $host . $base_path);
 define('BASE_PATH', $base_path);
-define('SITE_DESCRIPTION', 'A simple PHP forum system');
+define('SITE_DESCRIPTION', 'A sparse community forum. Anyone can read. Members write.');
 
 // Security settings
 define('SESSION_TIMEOUT', 3600); // 1 hour
@@ -72,8 +72,7 @@ require_once __DIR__ . '/../includes/functions.php';
 // Set timezone
 date_default_timezone_set('UTC');
 
-// Error reporting (disable in production)
+// Error reporting: show in browser only when explicitly debugging; off by default (production-safe)
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
-?>
-
+ini_set('log_errors', 1);
+ini_set('display_errors', (getenv('APP_DEBUG') === '1') ? 1 : 0);

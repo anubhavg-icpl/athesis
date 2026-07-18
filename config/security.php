@@ -18,11 +18,11 @@ function set_security_headers() {
     // Referrer Policy
     header('Referrer-Policy: strict-origin-when-cross-origin');
     
-    // Content Security Policy
+    // Content Security Policy (allow JetBrains Mono + Bootstrap CDN)
     $csp = "default-src 'self'; " .
            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " .
-           "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " .
-           "font-src 'self' https://cdn.jsdelivr.net; " .
+           "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; " .
+           "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com data:; " .
            "img-src 'self' data: https:; " .
            "connect-src 'self';";
     header("Content-Security-Policy: $csp");
@@ -322,5 +322,3 @@ function log_security_event($event_type, $details = [], $user_id = null) {
 // Initialize security
 set_security_headers();
 secure_session_start();
-?>
-
