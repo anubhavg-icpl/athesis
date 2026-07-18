@@ -9,6 +9,7 @@ $category = trim($_GET['category'] ?? '');
 $tag = trim($_GET['tag'] ?? '');
 
 $db = getDB();
+blog_publish_due_posts($db);
 $where = ["p.status = 'published'"];
 $params = [];
 

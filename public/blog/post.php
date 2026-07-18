@@ -8,12 +8,15 @@ if ($slug === '') {
 }
 
 $db = getDB();
+blog_publish_due_posts($db);
 $post = blog_get_post_by_slug($db, $slug, true);
 
-// Authors/admins can preview drafts via ?preview=1 when logged in as owner
+// Authors/admins can preview drafts/scheduled
 if (!$post && is_logged_in()) {
     $draft = blog_get_post_by_slug($db, $slug, false);
-    if ($draft && blog_can_edit_post($draft) && (!empty($_GET['preview']) || $draft['status'] === 'draft')) {
+    if ($draft && blog_can_edit_post($draft) && (
+        !empty($_GET['preview']) || in_array($draft['status'], ['draft', 'scheduled'], true)
+    )) {
         $post = $draft;
     }
 }

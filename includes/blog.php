@@ -165,3 +165,164 @@ function blog_can_edit_post($post) {
     }
     return isset($_SESSION['user_id']) && (int) $_SESSION['user_id'] === (int) $post['user_id'];
 }
+
+/**
+ * Publish any scheduled posts whose scheduled_at is due (lazy cron).
+ */
+function blog_publish_due_posts($db = null) {
+    $db = $db ?: getDB();
+    try {
+        $stmt = $db->prepare("
+            UPDATE blog_posts
+            SET status = 'published',
+                published_at = COALESCE(published_at, scheduled_at, NOW()),
+                scheduled_at = NULL
+            WHERE status = 'scheduled'
+              AND scheduled_at IS NOT NULL
+              AND scheduled_at <= NOW()
+        ");
+        $stmt->execute();
+        return $stmt->rowCount();
+    } catch (Throwable $e) {
+        return 0;
+    }
+}
+
+function blog_save_revision($db, $post_id, $data, $user_id = null) {
+    $stmt = $db->prepare('
+        INSERT INTO blog_revisions
+        (post_id, user_id, title, excerpt, content, meta_title, meta_description, featured_image)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ');
+    $stmt->execute([
+        (int) $post_id,
+        $user_id,
+        $data['title'] ?? '',
+        $data['excerpt'] ?? null,
+        $data['content'] ?? '',
+        $data['meta_title'] ?? null,
+        $data['meta_description'] ?? null,
+        $data['featured_image'] ?? null,
+    ]);
+    // Keep last 20 revisions per post
+    $stmt = $db->prepare('
+        DELETE FROM blog_revisions
+        WHERE post_id = ?
+          AND id NOT IN (
+            SELECT id FROM (
+              SELECT id FROM blog_revisions WHERE post_id = ? ORDER BY created_at DESC LIMIT 20
+            ) t
+          )
+    ');
+    $stmt->execute([(int) $post_id, (int) $post_id]);
+    return (int) $db->lastInsertId();
+}
+
+function blog_get_revisions($db, $post_id, $limit = 20) {
+    $limit = max(1, min(50, (int) $limit));
+    $stmt = $db->prepare("
+        SELECT r.*, u.display_name
+        FROM blog_revisions r
+        LEFT JOIN users u ON u.id = r.user_id
+        WHERE r.post_id = ?
+        ORDER BY r.created_at DESC
+        LIMIT $limit
+    ");
+    $stmt->execute([(int) $post_id]);
+    return $stmt->fetchAll();
+}
+
+function blog_upload_dir() {
+    return dirname(__DIR__) . '/public/uploads/blog';
+}
+
+function blog_ensure_upload_dir() {
+    $dir = blog_upload_dir();
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+    $ht = $dir . '/.htaccess';
+    if (!is_file($ht)) {
+        file_put_contents($ht, "Options -Indexes\n<FilesMatch \"\\.(php|phtml|php3|php4|php5|phar)$\">\n  Require all denied\n</FilesMatch>\n");
+    }
+    return $dir;
+}
+
+/**
+ * Handle image upload. Returns [ok=>bool, url=>, error=>]
+ */
+function blog_handle_image_upload($file, $user_id = null) {
+    if (empty($file) || !isset($file['error']) || $file['error'] === UPLOAD_ERR_NO_FILE) {
+        return ['ok' => false, 'error' => 'No file uploaded.'];
+    }
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        return ['ok' => false, 'error' => 'Upload failed (code ' . (int) $file['error'] . ').'];
+    }
+    $max = defined('MAX_UPLOAD_SIZE') ? MAX_UPLOAD_SIZE : 2 * 1024 * 1024;
+    if (($file['size'] ?? 0) > $max) {
+        return ['ok' => false, 'error' => 'File too large (max ' . round($max / 1024 / 1024, 1) . 'MB).'];
+    }
+
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->file($file['tmp_name']);
+    $allowed = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/gif' => 'gif',
+        'image/webp' => 'webp',
+    ];
+    if (!isset($allowed[$mime])) {
+        return ['ok' => false, 'error' => 'Only JPG, PNG, GIF, WebP allowed.'];
+    }
+
+    $dir = blog_ensure_upload_dir();
+    $name = date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $allowed[$mime];
+    $dest = $dir . '/' . $name;
+    if (!move_uploaded_file($file['tmp_name'], $dest)) {
+        return ['ok' => false, 'error' => 'Could not store upload.'];
+    }
+
+    $url_path = 'public/uploads/blog/' . $name;
+    $public_url = url($url_path);
+
+    try {
+        $db = getDB();
+        $stmt = $db->prepare('
+            INSERT INTO blog_media (user_id, filename, original_name, mime_type, size_bytes, url_path)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ');
+        $stmt->execute([
+            $user_id,
+            $name,
+            mb_substr($file['name'] ?? $name, 0, 255),
+            $mime,
+            (int) $file['size'],
+            $url_path,
+        ]);
+    } catch (Throwable $e) {
+        // file saved even if DB insert fails
+    }
+
+    return ['ok' => true, 'url' => $public_url, 'path' => $url_path];
+}
+
+function blog_resolve_status($status, $scheduled_at_raw) {
+    $status = in_array($status, ['draft', 'published', 'scheduled'], true) ? $status : 'draft';
+    $scheduled_at = null;
+    $published_at = null;
+
+    if ($status === 'scheduled') {
+        $ts = strtotime((string) $scheduled_at_raw);
+        if (!$ts || $ts <= time()) {
+            // past/invalid schedule → publish now
+            $status = 'published';
+            $published_at = date('Y-m-d H:i:s');
+        } else {
+            $scheduled_at = date('Y-m-d H:i:s', $ts);
+        }
+    } elseif ($status === 'published') {
+        $published_at = date('Y-m-d H:i:s');
+    }
+
+    return [$status, $published_at, $scheduled_at];
+}

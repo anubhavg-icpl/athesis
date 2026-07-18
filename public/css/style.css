@@ -1329,6 +1329,62 @@ small.text-muted {
     accent-color: var(--accent);
 }
 
+/* Phase 2 admin / media */
+.ody-admin-table {
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+}
+
+.ody-media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+}
+
+.ody-media-grid-sm {
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+}
+
+.ody-media-card {
+    border: 1px solid var(--border);
+    padding: 0.5rem;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.ody-media-card img,
+.ody-media-pick img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+    background: #050505;
+}
+
+.ody-media-pick {
+    border: 1px solid var(--border);
+    padding: 0;
+    background: var(--bg);
+    cursor: pointer;
+}
+
+.ody-media-pick:hover {
+    border-color: var(--accent);
+}
+
+.ody-preview-box {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border);
+}
+
+.ody-copy-url {
+    color: var(--accent);
+    word-break: break-all;
+}
+
 .topic-content a,
 .reply-content a,
 .ody-post-body a {

@@ -14,6 +14,7 @@
                 <a href="<?php echo url('public/blog/rss.php'); ?>">rss</a>
                 <?php if (is_logged_in()): ?>
                     <a href="<?php echo url('public/blog/write.php'); ?>">write</a>
+                    <a href="<?php echo url('public/blog/admin.php'); ?>">admin</a>
                     <a href="<?php echo url('public/auth/profile.php'); ?>">profile</a>
                 <?php else: ?>
                     <a href="<?php echo url('public/auth/login.php'); ?>">login</a>

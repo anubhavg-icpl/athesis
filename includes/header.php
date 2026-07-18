@@ -74,6 +74,9 @@ $og_type = $page_og_type ?? 'website';
                         <a href="<?php echo url('public/blog/write.php'); ?>" class="accent">write</a>
                     </li>
                     <li>
+                        <a href="<?php echo url('public/blog/admin.php'); ?>">admin</a>
+                    </li>
+                    <li>
                         <a href="<?php echo url('public/forum/create_topic.php'); ?>">new topic</a>
                     </li>
                     <li>
