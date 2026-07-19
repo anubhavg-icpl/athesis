@@ -76,7 +76,7 @@ function blog_sync_tags($db, $post_id, $tag_ids) {
     if (empty($tag_ids)) {
         return;
     }
-    $ins = $db->prepare('INSERT IGNORE INTO blog_post_tags (post_id, tag_id) VALUES (?, ?)');
+    $ins = $db->prepare('INSERT INTO blog_post_tags (post_id, tag_id) VALUES (?, ?) ON CONFLICT DO NOTHING');
     foreach ($tag_ids as $tid) {
         $tid = (int) $tid;
         if ($tid > 0) {

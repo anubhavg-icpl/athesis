@@ -1,7 +1,10 @@
 FROM php:8.2-apache
 
-# PHP extension the app needs (PDO MySQL driver)
-RUN docker-php-ext-install pdo_mysql
+# PostgreSQL client lib + PDO pgsql driver (no MySQL — hard cutoff to Postgres/pgvector)
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libpq-dev \
+ && docker-php-ext-install pdo_pgsql \
+ && rm -rf /var/lib/apt/lists/*
 
 # mod_rewrite (standard, harmless even though app uses no rewrites today)
 RUN a2enmod rewrite

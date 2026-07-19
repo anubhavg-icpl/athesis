@@ -1,17 +1,16 @@
 services:
   db:
-    image: mysql:8.0
+    image: pgvector/pgvector:pg16
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-php_forum}
-      MYSQL_USER: ${MYSQL_USER:-forum}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-forumpass}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      POSTGRES_DB: ${POSTGRES_DB:-athesis}
+      POSTGRES_USER: ${POSTGRES_USER:-athesis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-athesispass}
     volumes:
-      - db_data:/var/lib/mysql
-      # Docker-safe seed (no CREATE/USE lines that break on existing DB)
-      - ./sql/forum_setup.sql:/docker-entrypoint-initdb.d/01_forum_setup.sql:ro
+      - db_data:/var/lib/postgresql/data
+      # Fresh-build schema (Postgres + pgvector). Runs once on an empty data volume.
+      - ./sql/schema_pg.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-rootpass}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-athesis} -d ${POSTGRES_DB:-athesis}"]
       interval: 5s
       timeout: 5s
       retries: 30
@@ -24,12 +23,13 @@ services:
         condition: service_healthy
     environment:
       DB_HOST: db
-      DB_NAME: ${MYSQL_DATABASE:-php_forum}
-      DB_USER: ${MYSQL_USER:-forum}
-      DB_PASS: ${MYSQL_PASSWORD:-forumpass}
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-athesis}
+      DB_USER: ${POSTGRES_USER:-athesis}
+      DB_PASS: ${POSTGRES_PASSWORD:-athesispass}
       APP_DEBUG: ${APP_DEBUG:-0}
-      # AGORA agent API key — must match AGENT_API_KEY in .mcp.json. Change before any real deploy.
       AGENT_API_KEY: ${AGENT_API_KEY:-changeme-dev-key}
+      FORUM_NAME: ${FORUM_NAME:-AGORA}
     ports:
       - "8088:80"
     restart: unless-stopped

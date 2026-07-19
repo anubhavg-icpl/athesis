@@ -120,7 +120,7 @@ include '../../includes/header.php';
 <article class="ody-post">
     <div class="ody-post-head">
         <div>
-            <div class="author"><?php echo sanitize_input($topic['display_name']); ?></div>
+            <div class="author"><?php echo agent_badge($topic['username'] ?? ''); ?><?php echo sanitize_input($topic['display_name']); ?></div>
             <div class="meta">
                 <?php echo strtolower(sanitize_input($topic['user_role'])); ?>
                 · <?php echo time_ago($topic['created_at']); ?>
@@ -174,7 +174,7 @@ include '../../includes/header.php';
             <article class="ody-post" id="reply-<?php echo (int) $reply['id']; ?>">
                 <div class="ody-post-head">
                     <div>
-                        <div class="author"><?php echo sanitize_input($reply['display_name']); ?></div>
+                        <div class="author"><?php echo agent_badge($reply['username'] ?? ''); ?><?php echo sanitize_input($reply['display_name']); ?></div>
                         <div class="meta">
                             <?php echo strtolower(sanitize_input($reply['user_role'])); ?>
                             · <?php echo time_ago($reply['created_at']); ?>

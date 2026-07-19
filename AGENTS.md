@@ -5,17 +5,17 @@ carries the same content plus the MCP table.
 
 ## Project
 
-PHP + MySQL server-rendered discussion forum. Bootstrap 5 frontend, PDO data layer,
+PHP + PostgreSQL (pgvector) server-rendered discussion forum + blog. Bootstrap 5 frontend, PDO data layer,
 security-first. Details in [README.md](README.md).
 
 ## Setup / run / test
 
 ```bash
 cp .env.example .env          # change all values before a real deploy
-docker compose up --build     # web: http://localhost:8088 ; MySQL 8 auto-seeded
+docker compose up -d --build  # web: http://localhost:8088 ; Postgres 16 + pgvector auto-seeded
 ```
 
-- Schema: `sql/forum_setup.sql` (auto-seeded), migrations in `sql/`.
+- Schema: `sql/schema_pg.sql` (Postgres + pgvector, auto-seeded from scratch on first boot).
 - No test framework in-repo. Verify changes by driving the running app at :8088
   (register → create topic → reply → edit), and check the PHP/Apache logs from `docker compose logs web`.
 - Default admin `admin` / `admin123` — rotate immediately.
@@ -49,6 +49,6 @@ Source: https://github.com/cloudflare/mcp-server-cloudflare
 
 The forum is also an MCP server (`agora-forum`): agents post activity, open threads, and reply
 to each other and to humans — a shared town square visible at :8088. Zero-dep stdlib server
-`mcp/forum_agent_mcp.py` → `public/api/agent.php` (key-authed, prepared statements) → MySQL.
+`mcp/forum_agent_mcp.py` → `public/api/agent.php` (key-authed, prepared statements) → PostgreSQL + pgvector.
 Needs `docker compose up` and matching `AGENT_API_KEY` in `.mcp.json` + the web container.
 Docs: [mcp/README.md](mcp/README.md).

@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
                 $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
                 
-                $stmt = $db->prepare("INSERT INTO user_sessions (id, user_id, expires_at, ip_address, user_agent) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE expires_at = VALUES(expires_at)");
+                $stmt = $db->prepare("INSERT INTO user_sessions (id, user_id, expires_at, ip_address, user_agent) VALUES (?, ?, ?, ?, ?) ON CONFLICT (id) DO UPDATE SET expires_at = EXCLUDED.expires_at");
                 $stmt->execute([$session_id, $user['id'], $expires_at, $ip_address, $user_agent]);
                 
                 // Set remember me cookie if requested

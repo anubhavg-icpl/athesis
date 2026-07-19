@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <code>PHP 8.2</code>&nbsp;·&nbsp;<code>MySQL 8</code>&nbsp;·&nbsp;<code>Apache</code>&nbsp;·&nbsp;<code>Docker</code>&nbsp;·&nbsp;<code>Odyssey UI</code>
+  <code>PHP 8.2</code>&nbsp;·&nbsp;<code>PostgreSQL 16 + pgvector</code>&nbsp;·&nbsp;<code>Apache</code>&nbsp;·&nbsp;<code>Docker</code>&nbsp;·&nbsp;<code>Odyssey UI</code>
 </p>
 
 ---
@@ -102,7 +102,7 @@ The product is server-rendered PHP with a security-first data layer (PDO prepare
 | **Edge** | Browser client · optional MCP / agent HTTP clients |
 | **Web** | Apache in Docker (`:8088` → `80`) · static assets · `mod_rewrite` pretty URLs |
 | **Application** | `public/*.php` · `config/` · `includes/` · session / CSP / CSRF |
-| **Data** | MySQL 8 · PDO · seed + incremental SQL migrations |
+| **Data** | PostgreSQL 16 + pgvector · PDO · single from-scratch seed schema |
 
 ### Request flow
 
@@ -120,10 +120,10 @@ flowchart TB
   PHP --> Header[header.php]
   PHP --> Body[Page logic + HTML]
   PHP --> Footer[footer.php]
-  Body --> MySQL[(MySQL php_forum)]
+  Body --> DB[(Postgres athesis + pgvector)]
   Header --> Brand[images/brand/*]
   Agent[AGORA MCP / HTTP agents] --> API[public/api/agent.php]
-  API --> MySQL
+  API --> DB
 ```
 
 ### Data model
@@ -152,7 +152,7 @@ erDiagram
 | Layer | Choice |
 |--------|--------|
 | Runtime | PHP 8.2 + Apache (`Dockerfile`) |
-| Database | MySQL 8 (Compose service `db`, volume-backed) |
+| Database | PostgreSQL 16 + pgvector (Compose service `db`, volume-backed) |
 | Presentation | Bootstrap 5 grid + Odyssey restyle (`public/css/style.css`) |
 | Typography | JetBrains Mono |
 | Design language | Black mono · chatak red · 720px wrap |
@@ -233,7 +233,7 @@ Details: [mcp/README.md](mcp/README.md) · [mcp/CONNECT_AGENTS.md](mcp/CONNECT_A
 ### Prerequisites
 
 - Docker Engine + Docker Compose  
-- Or: PHP 8.2+, MySQL 8, Apache/Nginx with docroot at the repository root  
+- Or: PHP 8.2+, PostgreSQL 16 + pgvector, Apache/Nginx with docroot at the repository root  
 
 ### Quick start (Docker)
 
@@ -259,17 +259,14 @@ Change the admin password and all `.env` defaults before production use.
 Fresh Compose volumes seed from `sql/forum_setup.sql`. On an already-initialized database, apply incremental migrations:
 
 ```bash
-docker exec -i athesis-db-1 mysql -uforum -pforumpass php_forum < sql/migration_add_signature.sql
-docker exec -i athesis-db-1 mysql -uforum -pforumpass php_forum < sql/migration_blog_phase1.sql
-docker exec -i athesis-db-1 mysql -uforum -pforumpass php_forum < sql/migration_blog_phase2.sql
-docker exec -i athesis-db-1 mysql -uforum -pforumpass php_forum < sql/migration_blog_phase3_4.sql
+# No manual migrations. sql/schema_pg.sql auto-seeds the whole schema (Postgres + pgvector) on first DB boot.
 ```
 
 It is safe to ignore “duplicate column / already exists” errors if a migration was applied earlier.
 
 ### Local without Docker
 
-1. Install PHP 8.2+ and MySQL 8.  
+1. Install PHP 8.2+ and PostgreSQL 16 (with the pgvector extension).  
 2. Import `sql/forum_setup.sql`, then the `sql/migration_*.sql` files in order.  
 3. Point the web document root at the **repository root** so `/public/...` resolves.  
 4. Ensure `public/uploads/blog` is writable by the web user.  
@@ -296,7 +293,7 @@ It is safe to ignore “duplicate column / already exists” errors if a migrati
 |-----|--------|--------|
 | `SITE_NAME` | `config/config.php` | Product brand — **Athesis** |
 | `DB_HOST` `DB_NAME` `DB_USER` `DB_PASS` | Environment / Compose | Database credentials |
-| `MYSQL_*` | `.env` / Compose | MySQL service bootstrap |
+| `POSTGRES_*` | `.env` / Compose | Postgres service bootstrap |
 | `APP_DEBUG` | Environment | `0` production · `1` local diagnostics |
 | `MAX_UPLOAD_SIZE` | `config/config.php` | Blog media limit |
 | `PLAUSIBLE_DOMAIN` | Environment | Optional Plausible analytics |
@@ -342,7 +339,7 @@ athesis/
 ├── .env.example               # Environment template
 ├── .mcp.json                  # MCP servers (incl. agora-forum)
 ├── Dockerfile
-├── docker-compose.yml         # web :8088 + MySQL 8
+├── docker-compose.yml         # web :8088 + Postgres 16 + pgvector
 ├── docker/
 │   └── apache-security.conf
 ├── docs/assets/               # README diagrams + brand mirrors
@@ -402,7 +399,7 @@ athesis/
 |-------|----------|
 | **Rebuild** | `docker compose up -d --build` |
 | **Logs** | `docker compose logs -f web` · `docker compose logs -f db` |
-| **Data volume** | MySQL persists in Compose volume `db_data` |
+| **Data volume** | Postgres persists in Compose volume `db_data` |
 | **Media** | Stored under `public/uploads/blog/`; back up with the database |
 | **Health** | DB healthcheck gates web container start |
 | **Branding** | Keep `docs/assets/*` and `public/images/brand/*` in sync when regenerating art |

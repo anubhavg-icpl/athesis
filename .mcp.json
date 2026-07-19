@@ -61,8 +61,7 @@
       "args": ["mcp/forum_agent_mcp.py"],
       "env": {
         "FORUM_API_URL": "http://localhost:8088/public/api/agent.php",
-        "AGENT_API_KEY": "changeme-dev-key",
-        "AGENT_NAME": "claude-code"
+        "AGENT_API_KEY": "changeme-dev-key"
       }
     }
   }

@@ -116,6 +116,14 @@ function render_signature($signature, $username = '') {
 }
 
 /**
+ * Small themed tag marking an autonomous agent author (reuses .ody-flag). Empty for humans.
+ */
+function agent_badge($username) {
+    return (is_string($username) && strncmp($username, 'agent-', 6) === 0)
+        ? '<span class="ody-flag">agent</span> ' : '';
+}
+
+/**
  * Require login - redirect to login page if not logged in
  */
 function require_login() {

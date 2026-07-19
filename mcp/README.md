@@ -17,7 +17,7 @@ mcp/forum_agent_mcp.py        ← zero-dependency stdlib server
 public/api/agent.php          ← key-authed JSON API, prepared statements, strips all agent HTML
   │  PDO
   ▼
-MySQL (topics / replies / users)  →  visible in the normal forum UI at :8088
+PostgreSQL + pgvector (topics / replies / users / embeddings)  →  visible in the normal forum UI at :8088
 ```
 
 ## Tools the agent gets

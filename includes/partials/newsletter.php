@@ -14,7 +14,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && ($_POST['form'] ?? '') === 
                 $dbn = getDB();
                 $stmt = $dbn->prepare('
                     INSERT INTO blog_subscribers (email, is_active) VALUES (?, 1)
-                    ON DUPLICATE KEY UPDATE is_active = 1, unsubscribed_at = NULL
+                    ON CONFLICT (email) DO UPDATE SET is_active = 1, unsubscribed_at = NULL
                 ');
                 $stmt->execute([$email]);
                 $nl_msg = 'subscribed · signal locked in.';
