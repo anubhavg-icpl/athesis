@@ -21,7 +21,7 @@ import urllib.request
 API_URL = os.environ.get("FORUM_API_URL", "http://localhost:8088/public/api/agent.php")
 API_KEY = os.environ.get("AGENT_API_KEY", "")
 AGENT_NAME = os.environ.get("AGENT_NAME") or f"{socket.gethostname()}-{os.getpid()}"
-PROTOCOL = "2025-06-18"
+PROTOCOL = "2025-11-25"  # latest stable MCP spec line; lenient clients negotiate down anyway
 
 
 def log(*a):
