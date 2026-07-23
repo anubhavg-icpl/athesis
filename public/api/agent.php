@@ -17,13 +17,14 @@ require_once __DIR__ . '/../../includes/functions.php'; // hash_password() — n
 const WALL_TITLE = '▓ agent activity wall';
 const EMBED_DIM  = 1536;                 // pgvector column dimension agents must match
 const WALL_LOCK  = 727001;               // pg advisory-lock key for singleton-wall creation
+const A2A_DEFAULT_VERSION = '1.0';       // A2A protocolVersion — single source of truth (card + A2A-Version header). const at file scope is NOT hoisted, so it lives up here before a2a_dispatch() runs.
 $FORUM_NAME = getenv('FORUM_NAME') ?: 'AGORA';
 
 function out($data, int $code = 200) {
     http_response_code($code);
     header('Content-Type: application/json; charset=utf-8');
     header('X-Content-Type-Options: nosniff');
-    echo json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    echo json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
     exit;
 }
 function fail(string $msg, int $code = 400) { out(['ok' => false, 'error' => $msg], $code); }
@@ -52,6 +53,9 @@ $action = $isGet ? (string)($_GET['action'] ?? '') : '';
 $expected = getenv('AGENT_API_KEY') ?: '';
 if ($expected === '') fail('agent API disabled: set AGENT_API_KEY in the server environment', 503);
 $provided = $_SERVER['HTTP_X_AGENT_KEY'] ?? '';
+// ponytail: EventSource cannot set headers, so the SSE stream accepts the shared key as ?key=.
+// Ceiling: query-string creds land in access logs/history. Upgrade path = short-lived HMAC token
+// scoped to 'stream' instead of the raw master key. Fine for trusted-LAN dev; do not expose :8088.
 if ($provided === '' && $isGet && $action === 'stream') $provided = (string)($_GET['key'] ?? '');
 if (!hash_equals($expected, $provided)) fail('unauthorized: bad or missing X-Agent-Key', 401);
 
@@ -85,6 +89,10 @@ if ($isGet) {
 $agent_name = strtolower(preg_replace('/[^a-zA-Z0-9_-]/', '', (string)($_SERVER['HTTP_X_AGENT_NAME'] ?? 'anon')));
 if ($agent_name === '') $agent_name = 'anon';
 $agent_name = substr($agent_name, 0, 32);
+// block staff-impersonation: without this an agent named 'admin' renders as 'agent admin' and spoofs staff
+// (user_role is still forced to 'user' — this is spoofing prevention, not privilege escalation)
+$reserved = ['admin','administrator','moderator','mod','system','root','superuser','owner','staff','support','official'];
+if (in_array($agent_name, $reserved, true)) $agent_name .= '-bot';
 $username   = 'agent-' . $agent_name;  // hyphen => cannot collide with human usernames [a-zA-Z0-9_]
 
 function ensure_agent(PDO $db, string $username, string $agent_name): int {
@@ -116,6 +124,13 @@ $req = json_decode(file_get_contents('php://input'), true);
 if (!is_array($req)) $req = [];
 $action = (string)($req['action'] ?? '');
 
+// ---- A2A JSON-RPC facet: a body that is JSON-RPC 2.0 is dispatched as A2A and exits here.
+//      Bodies without the "jsonrpc":"2.0" marker fall through to the {action} switch below
+//      unchanged, so MCP/REST clients are unaffected. Non-breaking, no env change. ----
+if (($req['jsonrpc'] ?? null) === '2.0') {
+    a2a_dispatch($req, $db, $agent_id, $username, $agent_name);   // always exits
+}
+
 // ---- @mentions: parse @name / @agent-name, record for existing agents so they get an inbox ping ----
 function record_mentions(PDO $db, int $from_id, int $topic_id, ?int $reply_id, string $text): array {
     if (!preg_match_all('/@((?:agent-)?[a-z0-9_-]{1,40})/i', $text, $m)) return [];
@@ -134,8 +149,10 @@ function record_mentions(PDO $db, int $from_id, int $topic_id, ?int $reply_id, s
 function store_embedding(PDO $db, string $kind, int $ref_id, string $text, $arr): bool {
     $vec = vec_literal($arr);
     if ($vec === null) return false;
+    // ponytail: agent_clean the stored text — reply bodies arrive raw (only trim'd), so without this
+    // a '<script>...' reply would land verbatim in agora_embeddings.text and leak via agora_search.
     $db->prepare("INSERT INTO agora_embeddings (kind, ref_id, text, embedding) VALUES (?, ?, ?, ?::vector)")
-       ->execute([$kind, $ref_id, substr($text, 0, 500), $vec]);
+       ->execute([$kind, $ref_id, agent_clean(substr($text, 0, 500)), $vec]);
     return true;
 }
 
@@ -163,6 +180,133 @@ function add_reply(PDO $db, int $topic_id, int $user_id, string $content): int {
        ->execute([$user_id, $topic_id]);
     record_mentions($db, $user_id, $topic_id, $rid, $content);
     return $rid;
+}
+
+// ============================ A2A JSON-RPC 2.0 facet ============================
+// Minimal Agent2Agent surface layered on the same key-authed endpoint. Methods:
+//   message/send  -> post (new topic) or reply (if message references an existing topic)
+//   tasks/get     -> read a topic (returns status.message + history: the full thread)
+// Unimplemented A2A methods (tasks/cancel, message/stream, pushNotification/*) => -32601.
+// Every write reuses the parameterized helpers above (add_reply/agent_clean) — no SQL interpolation.
+
+class A2aError extends Exception {
+    public function __construct(public int $a2a_code, string $message) { parent::__construct($message, $a2a_code); }
+}
+
+function a2a_dispatch(array $req, PDO $db, int $agent_id, string $username, string $agent_name): void {
+    header('A2A-Version: ' . (string)($_SERVER['HTTP_A2A_VERSION'] ?? A2A_DEFAULT_VERSION));
+    if (array_is_list($req)) { a2a_error($req, -32600, 'invalid request: batch not supported'); } // JSON-RPC batch
+    $id     = array_key_exists('id', $req) ? $req['id'] : null;   // absent => notification (no response body)
+    $method = (string)($req['method'] ?? '');
+    $params = is_array($req['params'] ?? null) ? $req['params'] : [];
+    try {
+        $result = match ($method) {
+            'message/send' => a2a_message_send($params, $db, $agent_id, $username, $agent_name),
+            'tasks/get'    => a2a_tasks_get($params, $db),
+            default        => throw new A2aError(-32601, "method not found: {$method}"),
+        };
+        if ($id === null) { http_response_code(204); exit; }       // notification: side-effect only, no body
+        a2a_out(['jsonrpc' => '2.0', 'id' => $id, 'result' => $result]);
+    } catch (A2aError $e) {
+        a2a_error($req, $e->a2a_code, $e->getMessage());
+    } catch (Throwable $e) {   // noqa — never leak internals
+        a2a_error($req, -32603, 'internal error');
+    }
+}
+function a2a_error(array $req, int $code, string $message): void {
+    if (!array_key_exists('id', $req) || $req['id'] === null) { http_response_code(204); exit; }
+    a2a_out(['jsonrpc' => '2.0', 'id' => $req['id'], 'error' => ['code' => $code, 'message' => $message]]);
+}
+function a2a_out(array $payload): void {
+    header('Content-Type: application/json; charset=utf-8');
+    header('X-Content-Type-Options: nosniff');
+    echo json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+// message/send: reply if message.taskId/contextId resolves to an existing unlocked topic, else open a new one.
+function a2a_message_send(array $params, PDO $db, int $agent_id, string $username, string $agent_name): array {
+    $msg = $params['message'] ?? null;
+    if (!is_array($msg)) throw new A2aError(-32602, 'invalid params: message required');
+    $text = a2a_text_of($msg);
+    if ($text === '') throw new A2aError(-32602, 'invalid params: message needs a {kind:"text"} part');
+    $topic_id = (int)($msg['taskId'] ?? $msg['contextId'] ?? $params['id'] ?? $params['taskId'] ?? 0);
+    if ($topic_id > 0 && a2a_topic_open($db, $topic_id)) {                 // REPLY
+        $rid = add_reply($db, $topic_id, $agent_id, $text);
+        return a2a_task($topic_id, a2a_msg($username, $text, $topic_id, 'r' . $rid), a2a_ts($db, $topic_id));
+    }
+    [$title, $body] = a2a_split_title_body($text);                         // POST (new topic)
+    $ins = $db->prepare("INSERT INTO topics (title, content, user_id) VALUES (?, ?, ?) RETURNING id");
+    $ins->execute([$title, agent_clean($body), $agent_id]);
+    $tid = (int)$ins->fetchColumn();
+    record_mentions($db, $agent_id, $tid, null, $title . "\n" . $body);
+    return a2a_task($tid, a2a_msg($username, "{$title}\n\n{$body}", $tid, 't' . $tid), a2a_ts($db, $tid));
+}
+
+// tasks/get: return the topic as a Task — status.message = opening post, history = full thread.
+function a2a_tasks_get(array $params, PDO $db): array {
+    $tid = (int)($params['id'] ?? 0);
+    if ($tid <= 0) throw new A2aError(-32602, 'invalid params: id required');
+    $s = $db->prepare("SELECT t.id, t.title, t.content, t.created_at, u.username
+                       FROM topics t JOIN users u ON t.user_id = u.id WHERE t.id = ? LIMIT 1");
+    $s->execute([$tid]);
+    $t = $s->fetch();
+    if (!$t) throw new A2aError(-32001, 'task not found');
+    $opener = a2a_msg((string)$t['username'], (string)$t['title'] . "\n\n" . (string)$t['content'], $tid, 't' . $tid);
+    $r = $db->prepare("SELECT r.id, r.content, u.username FROM replies r JOIN users u ON r.user_id = u.id
+                       WHERE r.topic_id = ? AND r.is_deleted = 0 ORDER BY r.created_at ASC");
+    $r->execute([$tid]);
+    $history = [$opener];
+    foreach ($r->fetchAll() as $row) {
+        $history[] = a2a_msg((string)$row['username'], (string)$row['content'], $tid, 'r' . (int)$row['id']);
+    }
+    return a2a_task($tid, $opener, (string)$t['created_at'], $history);
+}
+
+// A2A object builders. All writes are synchronous + terminal => state "completed".
+function a2a_task(int $topic_id, array $latest_message, string $timestamp, array $history = null): array {
+    $task = [
+        'kind' => 'task', 'id' => (string)$topic_id, 'contextId' => (string)$topic_id,   // topics ARE the conversation scope
+        'status' => ['state' => 'completed', 'timestamp' => $timestamp, 'message' => $latest_message],
+        'artifacts' => [],
+    ];
+    if ($history !== null) $task['history'] = $history;
+    return $task;
+}
+function a2a_msg(string $author_username, string $text, int $topic_id, string $message_id): array {
+    return [
+        'kind'      => 'message',
+        'role'      => str_starts_with($author_username, 'agent-') ? 'agent' : 'user',
+        'parts'     => [['kind' => 'text', 'text' => $text]],
+        'messageId' => $message_id,
+        'taskId'    => (string)$topic_id,
+        'contextId' => (string)$topic_id,
+    ];
+}
+function a2a_text_of(array $msg): string {
+    foreach ($msg['parts'] ?? [] as $p) {
+        if (is_array($p) && ($p['kind'] ?? '') === 'text' && isset($p['text'])) return (string)$p['text'];
+    }
+    return '';
+}
+function a2a_topic_open(PDO $db, int $tid): bool {
+    $s = $db->prepare("SELECT 1 FROM topics WHERE id = ? AND is_locked = 0");
+    $s->execute([$tid]);
+    return (bool)$s->fetch();
+}
+function a2a_split_title_body(string $text): array {
+    $text = trim($text);
+    $nl = strpos($text, "\n");
+    $title = ($nl !== false) ? trim(substr($text, 0, $nl)) : $text;
+    if ($title === '') $title = substr($text, 0, 80);
+    $title = mb_substr($title, 0, 255);
+    $body  = ($nl !== false) ? trim(substr($text, $nl + 1)) : $text;
+    return [$title, $body];
+}
+function a2a_ts(PDO $db, int $tid): string {
+    $s = $db->prepare("SELECT created_at FROM topics WHERE id = ?");
+    $s->execute([$tid]);
+    return (string)$s->fetchColumn();
 }
 
 switch ($action) {
@@ -222,12 +366,15 @@ switch ($action) {
         if ($vec === null) fail('embedding required: array of ' . EMBED_DIM . ' numbers');
         $k = min(20, max(1, (int)($req['limit'] ?? 5)));
         $stmt = $db->prepare(
-            "SELECT kind, ref_id, text, 1 - (embedding <=> ?::vector) AS score
+            "SELECT kind, ref_id, text, (1 - (embedding <=> ?::vector))::float8 AS score
              FROM agora_embeddings ORDER BY embedding <=> ?::vector ASC LIMIT ?"
         );
         $stmt->bindValue(1, $vec); $stmt->bindValue(2, $vec); $stmt->bindValue(3, $k, PDO::PARAM_INT);
         $stmt->execute();
-        out(['ok' => true, 'results' => $stmt->fetchAll()]);
+        $rows = $stmt->fetchAll();
+        foreach ($rows as &$r) $r['score'] = (float)$r['score'];  // pdo_pgsql stringifies numerics; force float for typed JSON
+        unset($r);
+        out(['ok' => true, 'results' => $rows]);
     }
 
     case 'inbox': {
@@ -243,8 +390,9 @@ switch ($action) {
         $stmt->execute([$username]);
         $rows = $stmt->fetchAll();
         if ($rows) {
-            $ids = implode(',', array_map(fn($r) => (int)$r['id'], $rows));  // ints from DB, safe
-            $db->exec("UPDATE agora_mentions SET seen = 1 WHERE id IN ($ids)");
+            $ids = array_map(fn($r) => (int)$r['id'], $rows);  // ints from DB; parameterized for invariant safety
+            $ph  = implode(',', array_fill(0, count($ids), '?'));
+            $db->prepare("UPDATE agora_mentions SET seen = 1 WHERE id IN ($ph)")->execute($ids);
         }
         out(['ok' => true, 'mentions' => $rows]);
     }

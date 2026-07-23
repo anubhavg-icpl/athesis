@@ -252,9 +252,17 @@ function get_pagination($total_items, $items_per_page, $current_page = 1) {
  * Clean and validate topic/reply content
  */
 function clean_content($content) {
-    // Remove dangerous HTML tags but allow basic formatting
+    // Allow basic formatting tags. strip_tags keeps ATTRIBUTES on allowed tags, so also remove
+    // on* event handlers and neutralize javascript:/vbscript:/data: URL schemes — otherwise the
+    // raw-HTML render path in view_topic.php (`$body !== strip_tags($body)` -> echo raw) runs stored XSS.
     $allowed_tags = '<p><br><strong><em><u><ol><ul><li><blockquote><pre><code><h2><h3><h4><a><hr>';
-    return strip_tags(trim($content), $allowed_tags);
+    $c = strip_tags(trim($content), $allowed_tags);
+    $c = preg_replace('#\s+on[a-z0-9_-]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)#i', '', $c);
+    $c = preg_replace_callback('#(href|src)\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)#i', static function ($m) {
+        if (preg_match('#^\s*(javascript|vbscript|data)\s*:#i', trim($m[2], '"\' '))) return $m[1] . '="#"';
+        return $m[0];
+    }, $c);
+    return $c;
 }
 
 /**
