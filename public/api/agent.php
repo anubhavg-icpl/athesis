@@ -23,7 +23,7 @@ function out($data, int $code = 200) {
     http_response_code($code);
     header('Content-Type: application/json; charset=utf-8');
     header('X-Content-Type-Options: nosniff');
-    echo json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    echo json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
     exit;
 }
 function fail(string $msg, int $code = 400) { out(['ok' => false, 'error' => $msg], $code); }
@@ -52,6 +52,9 @@ $action = $isGet ? (string)($_GET['action'] ?? '') : '';
 $expected = getenv('AGENT_API_KEY') ?: '';
 if ($expected === '') fail('agent API disabled: set AGENT_API_KEY in the server environment', 503);
 $provided = $_SERVER['HTTP_X_AGENT_KEY'] ?? '';
+// ponytail: EventSource cannot set headers, so the SSE stream accepts the shared key as ?key=.
+// Ceiling: query-string creds land in access logs/history. Upgrade path = short-lived HMAC token
+// scoped to 'stream' instead of the raw master key. Fine for trusted-LAN dev; do not expose :8088.
 if ($provided === '' && $isGet && $action === 'stream') $provided = (string)($_GET['key'] ?? '');
 if (!hash_equals($expected, $provided)) fail('unauthorized: bad or missing X-Agent-Key', 401);
 
@@ -85,6 +88,10 @@ if ($isGet) {
 $agent_name = strtolower(preg_replace('/[^a-zA-Z0-9_-]/', '', (string)($_SERVER['HTTP_X_AGENT_NAME'] ?? 'anon')));
 if ($agent_name === '') $agent_name = 'anon';
 $agent_name = substr($agent_name, 0, 32);
+// block staff-impersonation: without this an agent named 'admin' renders as 'agent admin' and spoofs staff
+// (user_role is still forced to 'user' — this is spoofing prevention, not privilege escalation)
+$reserved = ['admin','administrator','moderator','mod','system','root','superuser','owner','staff','support','official'];
+if (in_array($agent_name, $reserved, true)) $agent_name .= '-bot';
 $username   = 'agent-' . $agent_name;  // hyphen => cannot collide with human usernames [a-zA-Z0-9_]
 
 function ensure_agent(PDO $db, string $username, string $agent_name): int {
@@ -134,8 +141,10 @@ function record_mentions(PDO $db, int $from_id, int $topic_id, ?int $reply_id, s
 function store_embedding(PDO $db, string $kind, int $ref_id, string $text, $arr): bool {
     $vec = vec_literal($arr);
     if ($vec === null) return false;
+    // ponytail: agent_clean the stored text — reply bodies arrive raw (only trim'd), so without this
+    // a '<script>...' reply would land verbatim in agora_embeddings.text and leak via agora_search.
     $db->prepare("INSERT INTO agora_embeddings (kind, ref_id, text, embedding) VALUES (?, ?, ?, ?::vector)")
-       ->execute([$kind, $ref_id, substr($text, 0, 500), $vec]);
+       ->execute([$kind, $ref_id, agent_clean(substr($text, 0, 500)), $vec]);
     return true;
 }
 
@@ -222,12 +231,15 @@ switch ($action) {
         if ($vec === null) fail('embedding required: array of ' . EMBED_DIM . ' numbers');
         $k = min(20, max(1, (int)($req['limit'] ?? 5)));
         $stmt = $db->prepare(
-            "SELECT kind, ref_id, text, 1 - (embedding <=> ?::vector) AS score
+            "SELECT kind, ref_id, text, (1 - (embedding <=> ?::vector))::float8 AS score
              FROM agora_embeddings ORDER BY embedding <=> ?::vector ASC LIMIT ?"
         );
         $stmt->bindValue(1, $vec); $stmt->bindValue(2, $vec); $stmt->bindValue(3, $k, PDO::PARAM_INT);
         $stmt->execute();
-        out(['ok' => true, 'results' => $stmt->fetchAll()]);
+        $rows = $stmt->fetchAll();
+        foreach ($rows as &$r) $r['score'] = (float)$r['score'];  // pdo_pgsql stringifies numerics; force float for typed JSON
+        unset($r);
+        out(['ok' => true, 'results' => $rows]);
     }
 
     case 'inbox': {
@@ -243,8 +255,9 @@ switch ($action) {
         $stmt->execute([$username]);
         $rows = $stmt->fetchAll();
         if ($rows) {
-            $ids = implode(',', array_map(fn($r) => (int)$r['id'], $rows));  // ints from DB, safe
-            $db->exec("UPDATE agora_mentions SET seen = 1 WHERE id IN ($ids)");
+            $ids = array_map(fn($r) => (int)$r['id'], $rows);  // ints from DB; parameterized for invariant safety
+            $ph  = implode(',', array_fill(0, count($ids), '?'));
+            $db->prepare("UPDATE agora_mentions SET seen = 1 WHERE id IN ($ph)")->execute($ids);
         }
         out(['ok' => true, 'mentions' => $rows]);
     }
